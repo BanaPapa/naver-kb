@@ -6,45 +6,54 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const NEW_LAND_BASE = 'https://new.land.naver.com';
 
+function first(v: string | string[] | undefined): string {
+  if (Array.isArray(v)) return v[0] ?? '';
+  return v ?? '';
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  const reqUrl = new URL(req.url ?? '', 'http://localhost');
-  const subPath = reqUrl.searchParams.get('__path') ?? '';
-  reqUrl.searchParams.delete('__path');
+  try {
+    const subPath = first(req.query.__path);
+    const target = new URL(`${NEW_LAND_BASE}/${subPath}`);
+    for (const [key, value] of Object.entries(req.query)) {
+      if (key === '__path') continue;
+      target.searchParams.set(key, first(value));
+    }
 
-  const target = new URL(`${NEW_LAND_BASE}/${subPath}`);
-  reqUrl.searchParams.forEach((value, key) => target.searchParams.set(key, value));
+    const cookie = (req.headers['x-naver-cookie'] as string | undefined) ?? '';
+    const bearer = (req.headers['x-naver-bearer'] as string | undefined) ?? '';
+    const referer = (req.headers['x-naver-referer'] as string | undefined) ?? 'https://new.land.naver.com/houses';
 
-  const cookie = (req.headers['x-naver-cookie'] as string | undefined) ?? '';
-  const bearer = (req.headers['x-naver-bearer'] as string | undefined) ?? '';
-  const referer = (req.headers['x-naver-referer'] as string | undefined) ?? 'https://new.land.naver.com/houses';
+    const headers: Record<string, string> = {
+      'Accept': 'application/json, text/plain, */*',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
+      'Referer': referer,
+      'Origin': 'https://new.land.naver.com',
+      'Accept-Language': 'ko-KR,ko;q=0.9',
+      'Sec-Fetch-Site': 'same-origin',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Dest': 'empty',
+    };
+    if (cookie) headers['Cookie'] = cookie;
+    // 빌라·단독 /api/articles 는 Bearer JWT 필수 (수동 토큰 — 설정 탭에서 입력)
+    if (bearer) headers['Authorization'] = `Bearer ${bearer}`;
 
-  const headers: Record<string, string> = {
-    'Accept': 'application/json, text/plain, */*',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
-    'Referer': referer,
-    'Origin': 'https://new.land.naver.com',
-    'Accept-Language': 'ko-KR,ko;q=0.9',
-    'Sec-Fetch-Site': 'same-origin',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Dest': 'empty',
-  };
-  if (cookie) headers['Cookie'] = cookie;
-  // 빌라·단독 /api/articles 는 Bearer JWT 필수 (수동 토큰 — 설정 탭에서 입력)
-  if (bearer) headers['Authorization'] = `Bearer ${bearer}`;
+    const init: { method?: string; headers: Record<string, string>; body?: string } = {
+      method: req.method,
+      headers,
+    };
+    if (req.method === 'POST') {
+      headers['Content-Type'] = 'application/json';
+      init.body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
+    }
 
-  const init: { method?: string; headers: Record<string, string>; body?: string } = {
-    method: req.method,
-    headers,
-  };
-  if (req.method === 'POST') {
-    headers['Content-Type'] = 'application/json';
-    init.body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
+    const naverRes = await fetch(target.toString(), init);
+    const text = await naverRes.text();
+
+    res.status(naverRes.status);
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.send(text);
+  } catch (err) {
+    res.status(502).json({ proxyError: err instanceof Error ? err.message : String(err) });
   }
-
-  const naverRes = await fetch(target.toString(), init);
-  const text = await naverRes.text();
-
-  res.status(naverRes.status);
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.send(text);
 }
