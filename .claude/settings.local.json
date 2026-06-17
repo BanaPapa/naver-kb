@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npm run:*)",
+      "Bash(B=\"$HOME/.claude/skills/gstack/browse/dist/browse\")",
+      "Bash($B goto:*)",
+      "Bash($B screenshot:*)",
+      "Bash($B js \":*)",
+      "Bash($B reload:*)",
+      "Bash($B snapshot:*)",
+      "Bash($B select:*)",
+      "Bash($B scroll:*)",
+      "Bash($B click:*)",
+      "Bash($B js:*)",
+      "Bash($B console:*)",
+      "Bash(git add:*)",
+      "Bash(git checkout:*)",
+      "Bash(git rebase:*)",
+      "Bash(GIT_EDITOR=true git rebase --continue)",
+      "Bash(git push:*)"
+    ]
+  }
+}
