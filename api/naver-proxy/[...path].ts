@@ -1,23 +1,20 @@
-// Vercel Edge Function — Naver API 프록시
-// 개발: Vite proxy(vite.config.ts)가 대신 처리하므로 이 파일은 프로덕션 전용
-export const config = { runtime: 'edge' };
+// Vercel Serverless Function (Node) — fin.land.naver.com 프록시 (프로덕션 전용)
+// 개발: Vite proxy(vite.config.ts '/naver-api')가 대신 처리.
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const NAVER_BASE = 'https://fin.land.naver.com/front-api/v1';
 
-export default async function handler(req: Request): Promise<Response> {
-  const url = new URL(req.url);
-
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
+  const reqUrl = new URL(req.url ?? '', 'http://localhost');
   // /api/naver-proxy/search/autocomplete/complexes → search/autocomplete/complexes
-  const subPath = url.pathname.replace(/^\/api\/naver-proxy\//, '');
+  const subPath = reqUrl.pathname.replace(/^\/api\/naver-proxy\//, '');
 
-  const naverUrl = new URL(`${NAVER_BASE}/${subPath}`);
-  url.searchParams.forEach((value, key) => {
-    naverUrl.searchParams.set(key, value);
-  });
+  const target = new URL(`${NAVER_BASE}/${subPath}`);
+  reqUrl.searchParams.forEach((value, key) => target.searchParams.set(key, value));
 
-  const cookie = req.headers.get('x-naver-cookie') ?? '';
+  const cookie = (req.headers['x-naver-cookie'] as string | undefined) ?? '';
 
-  const requestHeaders = new Headers({
+  const headers: Record<string, string> = {
     'Accept': 'application/json, text/plain, */*',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
     'Referer': 'https://fin.land.naver.com/map',
@@ -26,27 +23,22 @@ export default async function handler(req: Request): Promise<Response> {
     'Sec-Fetch-Site': 'same-origin',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Dest': 'empty',
-  });
-
-  if (cookie) {
-    requestHeaders.set('Cookie', cookie);
-  }
-
-  const fetchInit: RequestInit = {
-    method: req.method,
-    headers: requestHeaders,
   };
+  if (cookie) headers['Cookie'] = cookie;
 
+  const init: { method?: string; headers: Record<string, string>; body?: string } = {
+    method: req.method,
+    headers,
+  };
   if (req.method === 'POST') {
-    requestHeaders.set('Content-Type', 'application/json');
-    fetchInit.body = await req.text();
+    headers['Content-Type'] = 'application/json';
+    init.body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
   }
 
-  const naverRes = await fetch(naverUrl.toString(), fetchInit);
-  const responseText = await naverRes.text();
+  const naverRes = await fetch(target.toString(), init);
+  const text = await naverRes.text();
 
-  return new Response(responseText, {
-    status: naverRes.status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-  });
+  res.status(naverRes.status);
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.send(text);
 }
