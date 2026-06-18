@@ -48,14 +48,12 @@ export function buildEIconPng(): Buffer {
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const i = (y * W + x) * 4;
-      if (!inRoundedRect(x, y, W, H, 5)) continue;
-
       if (isEPixel(x, y)) {
-        // Blue (#1a6ef5) — high contrast on white
+        // Blue (#1a6ef5)
         pixelData[i] = 0x1a; pixelData[i + 1] = 0x6e;
         pixelData[i + 2] = 0xf5; pixelData[i + 3] = 0xff;
       } else {
-        // White background — clearly visible in dark taskbar tray
+        // White background (전체 32×32 — 투명 없음, 모서리 포함)
         pixelData[i] = 0xff; pixelData[i + 1] = 0xff;
         pixelData[i + 2] = 0xff; pixelData[i + 3] = 0xff;
       }
