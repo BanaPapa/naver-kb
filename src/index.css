@@ -2255,6 +2255,36 @@ input[type='range'].space-range:disabled {
   justify-content: center;
   margin-top: 8px;
 }
+.nv-login-btn {
+  min-width: 200px;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.nv-login-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0,0,0,0.3);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.nv-login-error {
+  background: rgba(255, 80, 80, 0.12);
+  border: 1px solid rgba(255, 80, 80, 0.4);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #ff6b6b;
+  max-width: 440px;
+  text-align: center;
+}
 
 .sort-icon {
   margin-left: 4px;

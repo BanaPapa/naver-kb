@@ -67,3 +67,34 @@ export async function fetchCrawlToken(supabaseAccessToken: string): Promise<stri
 export function clearCrawlToken(): void {
   tokenCache = null;
 }
+
+// ── 네이버 로그인 상태 ──────────────────────────────────────
+
+export interface CookieStatus {
+  hasCookies: boolean;
+  loginDate: string | null;
+}
+
+export async function getCookieStatus(): Promise<CookieStatus> {
+  try {
+    const res = await fetch(`${AGENT_BASE}/cookie-status`, {
+      signal: AbortSignal.timeout(2000),
+    });
+    if (!res.ok) return { hasCookies: false, loginDate: null };
+    return (await res.json()) as CookieStatus;
+  } catch {
+    return { hasCookies: false, loginDate: null };
+  }
+}
+
+// 로그인 창을 열고 사용자가 로그인 완료할 때까지 대기 (최대 3분)
+export async function startNaverLogin(): Promise<void> {
+  const res = await fetch(`${AGENT_BASE}/naver-login`, {
+    method: 'POST',
+    signal: AbortSignal.timeout(180_000),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? `로그인 요청 실패: ${res.status}`);
+  }
+}

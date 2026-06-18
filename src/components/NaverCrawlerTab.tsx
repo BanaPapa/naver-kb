@@ -29,7 +29,14 @@ export function NaverCrawlerTab({ crawler, slots, session }: NaverCrawlerTabProp
   const [crawlModalOpen, setCrawlModalOpen] = useState(false);
   const [slotModalOpen, setSlotModalOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const { status: agentStatus, recheck: recheckAgent } = useAgentStatus();
+  const {
+    status: agentStatus,
+    cookieReady,
+    loginLoading,
+    loginError,
+    recheck: recheckAgent,
+    triggerLogin,
+  } = useAgentStatus();
 
   // 에이전트 상태 변경 시 베이스 URL + 크롤 토큰 관리
   useEffect(() => {
@@ -150,6 +157,54 @@ export function NaverCrawlerTab({ crawler, slots, session }: NaverCrawlerTabProp
                 연결 재시도
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 에이전트 실행 중이지만 네이버 로그인 안 됨
+  if (agentStatus === 'running' && !cookieReady) {
+    return (
+      <div className={`eos-work${ctrlCollapsed ? ' ctrl-collapsed' : ''}`}>
+        <div className="eos-view">
+          <div className="nv-agent-offline">
+            <div className="nv-agent-offline-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v4l3 3" strokeLinecap="round" />
+              </svg>
+            </div>
+            <h2>네이버 로그인이 필요합니다</h2>
+            <p>
+              아래 버튼을 누르면 네이버 로그인 창이 열립니다.
+              <br />
+              <b>평소처럼 네이버에 로그인</b>하면 자동으로 연결됩니다.
+            </p>
+            {loginError && (
+              <div className="nv-login-error">{loginError}</div>
+            )}
+            <div className="nv-agent-actions">
+              <button
+                className="btn-primary nv-login-btn"
+                onClick={triggerLogin}
+                disabled={loginLoading}
+              >
+                {loginLoading ? (
+                  <>
+                    <span className="nv-login-spinner" />
+                    로그인 창 열림 — 네이버에 로그인해 주세요…
+                  </>
+                ) : (
+                  '네이버 로그인'
+                )}
+              </button>
+            </div>
+            {loginLoading && (
+              <p style={{ fontSize: 13 }}>
+                로그인 완료 후 창이 자동으로 닫힙니다. (최대 3분)
+              </p>
+            )}
           </div>
         </div>
       </div>

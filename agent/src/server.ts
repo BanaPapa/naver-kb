@@ -1,11 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
+import { getCookie, getBearer, hasCookies, getLoginDate } from './cookieStore';
+import { openNaverLoginWindow } from './naverLoginWindow';
 
 const AGENT_PORT = 47328;
 const FIN_LAND_BASE = 'https://fin.land.naver.com/front-api/v1';
 const NEW_LAND_BASE = 'https://new.land.naver.com';
 const ALLOWED_ORIGIN = 'https://estate-os.vercel.app';
 
-// 로컬 개발 웹앱도 허용 (Vite dev server)
 const ALLOWED_ORIGINS = new Set([
   ALLOWED_ORIGIN,
   'http://localhost:5173',
@@ -22,14 +23,12 @@ function first(v: string | string[] | undefined): string {
 function applyCorsHeaders(req: Request, res: Response): void {
   const origin = req.headers.origin ?? '';
   const allowedOrigin = ALLOWED_ORIGINS.has(origin) ? origin : ALLOWED_ORIGIN;
-
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'Content-Type, X-Naver-Cookie, X-Naver-Bearer, X-Naver-Referer, X-Crawl-Token',
   );
-  // Chrome Private Network Access: https 페이지 → localhost 호출 허용
   res.setHeader('Access-Control-Allow-Private-Network', 'true');
 }
 
@@ -56,8 +55,11 @@ async function proxyRequest(
       target.searchParams.set(key, first(value as string | string[] | undefined));
     }
 
-    const cookie = first(req.headers['x-naver-cookie'] as string | string[] | undefined);
-    const bearer = first(req.headers['x-naver-bearer'] as string | string[] | undefined);
+    // cookieStore 우선 → 없으면 웹앱이 헤더로 전달한 값 사용 (하위 호환)
+    const storedCookie = getCookie();
+    const storedBearer = getBearer();
+    const cookie = storedCookie || first(req.headers['x-naver-cookie'] as string | string[] | undefined);
+    const bearer = storedBearer || first(req.headers['x-naver-bearer'] as string | string[] | undefined);
     const referer = first(req.headers['x-naver-referer'] as string | string[] | undefined);
 
     const headers: Record<string, string> = {
@@ -78,8 +80,7 @@ async function proxyRequest(
     const init: RequestInit = { method: req.method, headers };
     if (req.method === 'POST') {
       headers['Content-Type'] = 'application/json';
-      init.body =
-        typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
+      init.body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
     }
 
     const naverRes = await fetch(target.toString(), init);
@@ -104,54 +105,54 @@ export function createServer(): express.Application {
   app.use(express.json());
   app.use(express.text());
 
-  // CORS / PNA 프리플라이트
   app.options('*', (req: Request, res: Response) => {
     applyCorsHeaders(req, res);
     res.status(204).end();
   });
 
-  // CORS 헤더를 모든 응답에 추가
   app.use((req: Request, res: Response, next: NextFunction) => {
     applyCorsHeaders(req, res);
     next();
   });
 
-  // 에이전트 실행 여부 감지용
+  // 에이전트 실행 여부 감지
   app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok', version: '1.0.0', port: AGENT_PORT });
+  });
+
+  // 쿠키 로그인 상태 확인
+  app.get('/cookie-status', (_req: Request, res: Response) => {
+    res.json({ hasCookies: hasCookies(), loginDate: getLoginDate() });
+  });
+
+  // 네이버 로그인 창 열기 (로그인 완료 또는 창 닫힘까지 대기)
+  app.post('/naver-login', (_req: Request, res: Response) => {
+    openNaverLoginWindow()
+      .then(() => res.json({ success: true }))
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        res.status(400).json({ error: msg });
+      });
   });
 
   // fin.land.naver.com 프록시
   app.all('/naver-api/*', (req: Request, res: Response) => {
     if (!verifyCrawlToken(req, res)) return;
     const subPath = (req.params as Record<string, string>)[0] ?? '';
-    proxyRequest(
-      FIN_LAND_BASE,
-      subPath,
-      req,
-      res,
-      {
-        Referer: 'https://fin.land.naver.com/map',
-        Origin: 'https://fin.land.naver.com',
-      },
-    );
+    proxyRequest(FIN_LAND_BASE, subPath, req, res, {
+      Referer: 'https://fin.land.naver.com/map',
+      Origin: 'https://fin.land.naver.com',
+    });
   });
 
   // new.land.naver.com 프록시
   app.all('/naver-new-api/*', (req: Request, res: Response) => {
     if (!verifyCrawlToken(req, res)) return;
     const subPath = (req.params as Record<string, string>)[0] ?? '';
-    const defaultReferer = 'https://new.land.naver.com/houses';
-    proxyRequest(
-      NEW_LAND_BASE,
-      subPath,
-      req,
-      res,
-      {
-        Referer: defaultReferer,
-        Origin: 'https://new.land.naver.com',
-      },
-    );
+    proxyRequest(NEW_LAND_BASE, subPath, req, res, {
+      Referer: 'https://new.land.naver.com/houses',
+      Origin: 'https://new.land.naver.com',
+    });
   });
 
   return app;
