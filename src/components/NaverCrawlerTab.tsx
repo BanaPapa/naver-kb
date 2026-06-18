@@ -316,7 +316,7 @@ export function NaverCrawlerTab({ crawler, slots, session }: NaverCrawlerTabProp
               {loginLoading ? (
                 <>
                   <span className="nv-login-spinner" />
-                  로그인 창 열림 — 네이버에 로그인해 주세요…
+                  로그인 창이 열렸습니다 — 네이버에 로그인해 주세요
                 </>
               ) : (
                 '네이버 로그인'
@@ -324,9 +324,17 @@ export function NaverCrawlerTab({ crawler, slots, session }: NaverCrawlerTabProp
             </button>
           </div>
           {loginLoading && (
-            <p style={{ fontSize: 13 }}>
-              로그인 완료 후 창이 자동으로 닫힙니다. (최대 3분)
-            </p>
+            <div className="nv-login-notice">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>
+                로그인 후 화면이 바뀌어도 <b>창을 직접 닫지 마세요.</b><br />
+                네이버 연결 정보를 수집하는 중이며, 완료되면 자동으로 닫힙니다.
+              </span>
+            </div>
           )}
         </div>
       </div>

@@ -27,9 +27,20 @@ export async function openNaverLoginWindow(): Promise<void> {
       resizable: false,
     });
 
+    // Windows에서 트레이 앱이 창을 열면 OS 포커스 탈취 방지로 작업표시줄에서만 깜빡임.
+    // setAlwaysOnTop(true) → 강제 전면 → focus → 이후 해제하는 표준 우회법.
+    win.setAlwaysOnTop(true, 'pop-up-menu');
+    win.show();
+    win.focus();
+    win.once('focus', () => {
+      win.setAlwaysOnTop(false);
+    });
+
     const ses = session.fromPartition(PARTITION);
     let loginDetected = false;
     let visitedLoginPage = false;
+    // bearer 캡처 단계에서 창이 닫혔을 때 정리할 수 있도록 외부에서 참조 가능하게 저장
+    let finishCapture: (() => void) | null = null;
 
     // new.land API 요청에서 Authorization 헤더 인터셉트 → Bearer 캡처
     ses.webRequest.onBeforeSendHeaders(
@@ -68,9 +79,12 @@ export async function openNaverLoginWindow(): Promise<void> {
         finished = true;
         clearInterval(bearerPoll);
         clearTimeout(bearerTimeout);
+        finishCapture = null;
         if (!win.isDestroyed()) win.close();
         resolve();
       };
+
+      finishCapture = finish; // closed 핸들러에서도 호출할 수 있도록 저장
 
       const bearerPoll = setInterval(() => {
         if (getBearer()) finish();
@@ -97,7 +111,12 @@ export async function openNaverLoginWindow(): Promise<void> {
     win.on('closed', () => {
       clearTimeout(maxTimer);
       if (!loginDetected) {
+        // 로그인 자체를 완료하지 않고 닫은 경우
         reject(new Error('로그인 창이 닫혔습니다. 로그인을 완료한 뒤 다시 시도해 주세요.'));
+      } else if (finishCapture) {
+        // 로그인은 됐지만 bearer 캡처 중에 창을 직접 닫은 경우
+        // finish()를 호출해 타이머를 정리하고 resolve (bearer 없이도 계속 진행)
+        finishCapture();
       }
     });
 
