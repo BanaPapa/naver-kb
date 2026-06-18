@@ -30,8 +30,7 @@
       "output": "release"
     },
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "assets/tray-icon.png"
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
     },
     "nsis": {
       "oneClick": true,

@@ -11,6 +11,9 @@ on:
         required: true
         default: '1.0.0'
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -47,8 +50,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name || format('agent-v{0}', inputs.version) }}
-          name: Estate-OS Agent ${{ github.ref_name || format('v{0}', inputs.version) }}
+          tag_name: ${{ github.ref_name }}
+          name: Estate-OS Agent ${{ github.ref_name }}
           draft: false
           prerelease: false
           files: agent/release/Estate-OS-Agent-Setup.exe
@@ -60,5 +63,3 @@ jobs:
             - 설치 위치: `%LOCALAPPDATA%\Programs\estate-os-agent`
             - Windows 시작 시 자동 실행 (트레이 상주)
             - 포트: 47328 (localhost only)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
