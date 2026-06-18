@@ -260,7 +260,9 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
                       <div>
                         <div className="nv-install-card-title">이 프로그램은 무엇인가요?</div>
                         <div className="nv-install-card-desc">
-                          PC 배경에서 조용히 실행되는 소형 도우미 프로그램입니다. 웹사이트에서 네이버 부동산 데이터를 조회할 때, 이 PC를 통해 대신 요청을 보내줍니다.
+                          PC 배경에서 조용히 실행되는 소형 도우미 프로그램입니다.<br />
+                          웹사이트에서 네이버 부동산 데이터를 조회할 때,<br />
+                          이 PC를 통해 대신 요청을 보내줍니다.
                         </div>
                       </div>
                     </div>
@@ -272,7 +274,8 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
                       <div>
                         <div className="nv-install-card-title">내 정보는 안전한가요?</div>
                         <div className="nv-install-card-desc">
-                          네이버 로그인 쿠키는 <b>이 PC에만 저장</b>되며, 외부 서버로 전송되지 않습니다. 이 프로그램은 네이버 부동산 외 다른 사이트에 접근하지 않습니다.
+                          네이버 로그인 쿠키는 <b>이 PC에만 저장</b>되며, 외부 서버로 전송되지 않습니다.<br />
+                          이 프로그램은 네이버 부동산 외 다른 사이트에 접근하지 않습니다.
                         </div>
                       </div>
                     </div>

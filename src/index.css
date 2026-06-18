@@ -2377,7 +2377,7 @@ input[type='range'].space-range:disabled {
 
 /* ── 에이전트 설치 모달 (확장) ── */
 .nv-install-modal--wide {
-  max-width: 680px;
+  max-width: 760px;
   width: 100%;
 }
 .nv-install-intro {
@@ -3337,20 +3337,21 @@ input[type='range'].space-range:disabled {
 .nv-install-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.72);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
 }
 .nv-install-modal {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  width: 560px;
+  background: rgba(10, 14, 20, 0.96);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  width: 720px;
   max-width: calc(100vw - 32px);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7);
   overflow: hidden;
 }
 .nv-install-modal-header {
@@ -3409,6 +3410,10 @@ input[type='range'].space-range:disabled {
   height: 52px;
   font-size: 19px;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .nv-install-action-btn {
   min-width: 0;
