@@ -3339,10 +3339,12 @@ input[type='range'].space-range:disabled {
   inset: 0;
   background: rgba(0, 0, 0, 0.72);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding: 24px 16px;
   z-index: 1000;
   backdrop-filter: blur(6px);
+  overflow-y: auto;
 }
 .nv-install-modal {
   background: rgba(10, 14, 20, 0.96);
@@ -3450,7 +3452,11 @@ input[type='range'].space-range:disabled {
 }
 .nv-install-done-desc {
   margin: 0;
-  font-size: 18px;
+  font-size: 19px;
   color: var(--muted);
   line-height: 1.7;
+}
+.nv-install-done .btn-primary {
+  font-size: 19px;
+  height: 52px;
 }

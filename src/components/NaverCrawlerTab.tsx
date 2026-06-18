@@ -241,7 +241,7 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
                       <path d="M20 6L9 17l-5-5" />
                     </svg>
                   </div>
-                  <p className="nv-install-done-title">다운로드가 시작되었습니다!</p>
+                  <p className="nv-install-done-title">다운로드가 시작됩니다!</p>
                   <p className="nv-install-done-desc">
                     다운로드한 파일(<b>Estate-OS-Agent-Setup.exe</b>)을 실행하면
                     <br />클릭 한 번으로 설치가 완료됩니다.
@@ -297,6 +297,19 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
                           <b>관리자 권한 불필요</b> — 현재 사용자 폴더에 설치됩니다.<br/>
                           Windows 시작 시 자동 실행되며 트레이에 아이콘으로 상주합니다.<br/>
                           삭제: 설정 → 앱 → Estate-OS Agent → 제거
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="nv-install-card">
+                      <div className="nv-install-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                      </div>
+                      <div>
+                        <div className="nv-install-card-title">"Windows의 PC 보호" 경고가 뜨면?</div>
+                        <div className="nv-install-card-desc">
+                          소규모 배포 앱은 Microsoft의 서명 인증을 받지 않아 SmartScreen 경고가 표시됩니다.<br/>
+                          <b>추가 정보</b>를 클릭한 뒤 <b>실행</b>을 누르면 정상 설치됩니다. 악성 코드가 아닙니다.
                         </div>
                       </div>
                     </div>
