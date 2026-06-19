@@ -52,6 +52,7 @@ export interface Property {
   managementFee: number;
   priceChangeStatus: number;
   priceChangeHistories?: Array<{ modifiedDate: string; dealPrice: number }>;
+  isalePrice: number;     // 분양권 분양가 (원 단위, 0 if not applicable)
   premiumPrice: number;   // 분양권 프리미엄 (원 단위, 0 if not applicable)
   optionPrice: number;    // 분양권 옵션비용 (원 단위, 0 if not applicable)
   supplySpace: number;

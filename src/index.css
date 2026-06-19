@@ -313,17 +313,17 @@ body {
   flex: none;
 }
 .cp-dong.active .cp-nm {
-  color: var(--teal);
+  color: var(--blue);
   font-weight: 700;
 }
 .cp-dong.active .cp-ct {
-  color: var(--teal);
+  color: var(--blue);
 }
 .cp-dong.done .cp-nm {
   color: var(--fg);
 }
 .cp-dong.done .cp-ct {
-  color: var(--teal);
+  color: var(--blue);
   font-weight: 700;
 }
 /* 검색 0건 동 → 비활성(어둡게) */
@@ -347,7 +347,7 @@ body {
   display: block;
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--teal), #5eead4);
+  background: var(--blue);
   transition: width 0.4s var(--ease);
 }
 
@@ -575,23 +575,22 @@ body {
 
 /* 완료 요약 */
 .cm-done-ic {
-  width: 62px;
-  height: 62px;
-  margin-bottom: 14px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: var(--teal);
-  background: var(--teal-dim);
-  box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.3);
+  display: inline-block;
+  vertical-align: middle;
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  color: var(--blue);
+  flex-shrink: 0;
 }
-.cm-done-ic.stop {
-  color: var(--amber);
-  background: var(--yellow-dim);
-  box-shadow: inset 0 0 0 1px rgba(245, 184, 92, 0.3);
+.cm-done-ic.stop { color: var(--amber); }
+.cm-done-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
 }
-.cm-done-ic svg { width: 32px; height: 32px; }
-.cm-done-title { font-size: 25px; font-weight: 800; color: var(--fg); }
 .cm-done-sub { margin-top: 4px; font-size: 17px; color: var(--muted); }
 .cm-stats {
   width: 100%;
@@ -615,9 +614,15 @@ body {
   color: var(--fg);
   font-variant-numeric: tabular-nums;
 }
-.cm-stat .cm-v.accent { color: var(--teal); }
+.cm-stat .cm-v.accent { color: var(--blue); }
 .cm-stat .cm-l { font-size: 16px; color: var(--muted); }
-.cm-result-btn { width: 100%; }
+.cm-result-btn {
+  width: 100%;
+  font-size: 19px !important;
+  height: auto !important;
+  padding: 14px 20px !important;
+  white-space: nowrap;
+}
 
 /* ── 저장 슬롯 모달 ── */
 .slot-modal {

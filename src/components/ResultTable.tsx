@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { Property, SearchMeta, TRADE_TYPE_LABELS, TRADE_TYPES, isExclusiveSpaceType, isPresaleType } from '../types';
 import {
   formatPriceByUnit, formatDirection, cleanBrokerageName, pyeongUnitPriceWon,
-  exportExcel, exportJSON, buildExportBaseName, PriceUnit, AreaUnit,
+  exportExcel, exportJSON, exportMarkdown, buildExportBaseName, PriceUnit, AreaUnit,
 } from '../services/api';
 import { getArticleDetail, ArticleDetailResult } from '../services/naverApi';
 
@@ -26,7 +26,7 @@ interface ResultTableProps {
 type SortKey =
   | 'midName' | 'smallName' | 'tradeType' | 'complexName' | 'dongName' | 'floorInfo' | 'direction'
   | 'supplySpaceName' | 'supplySpace' | 'exclusiveSpace' | 'contractSpace' | 'dealPrice' | 'pyeongPrice'
-  | 'premiumPrice' | 'optionPrice' | 'totalBuyPrice' | 'realPyeongPrice';
+  | 'isalePrice' | 'premiumPrice' | 'optionPrice' | 'totalBuyPrice' | 'realPyeongPrice';
 type SortDir = 'asc' | 'desc';
 
 const PAGE_SIZE     = 50;
@@ -40,7 +40,7 @@ const DEFAULT_COL_WIDTHS: Record<string, number> = {
   dongName: 52, floorInfo: 62, direction: 52, supplySpaceName: 64,
   exclusiveSpace: 88, supplySpace: 88,
   dealPrice: 110, pyeongPrice: 110,
-  premiumPrice: 96, optionPrice: 96, totalBuyPrice: 110, realPyeongPrice: 110,
+  isalePrice: 104, premiumPrice: 96, optionPrice: 96, totalBuyPrice: 110, realPyeongPrice: 110,
   warrantyPrice: 110, rentPrice: 84,
   feature: 200, brokerage: 200,
 };
@@ -98,9 +98,10 @@ function priceSortValue(p: Property): number {
 function getSortValue(p: Property, key: SortKey, realEstateType: string): number | string {
   if (key === 'dealPrice')     return priceSortValue(p);
   if (key === 'pyeongPrice')   return pyeongUnitPriceWon(p, realEstateType);
+  if (key === 'isalePrice')    return p.isalePrice;
   if (key === 'premiumPrice')  return p.premiumPrice;
   if (key === 'optionPrice')   return p.optionPrice;
-  if (key === 'totalBuyPrice') return p.dealPrice + p.premiumPrice + p.optionPrice;
+  if (key === 'totalBuyPrice') return p.isalePrice + p.premiumPrice + p.optionPrice;
   if (key === 'realPyeongPrice') {
     const area = realEstateType === 'OBYG' ? p.exclusiveSpace : p.supplySpace;
     const pyeong = area * SQM_TO_PYEONG;
@@ -425,11 +426,11 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
     filterText, sortKey, sortDir, page, realEstateType, isDupHidden, expandedGroups,
   ]);
 
-  // 분양권 페이지 자동 detail 패치 (프리미엄/옵션비용은 fin.land 목록 API에 없음)
-  // ※ paginated 선언 이후에 위치해야 deps 배열 참조가 TDZ 오류를 일으키지 않음
+  // 분양권 자동 detail 패치 (isalePrice/프리미엄/옵션비용은 fin.land 목록 API에 없음)
+  // ※ allFiltered 전체를 대상으로 fetch → 정렬/필터 변경 시에도 이미 캐시된 값을 즉시 표시
   useEffect(() => {
     if (!isPresale) return;
-    const toFetch = paginated.filter((p) => !detailCacheRef.current.has(p.articleNumber));
+    const toFetch = allFiltered.filter((p) => !detailCacheRef.current.has(p.articleNumber));
     if (toFetch.length === 0) return;
     const timers = toFetch.map((p, i) =>
       setTimeout(() => {
@@ -438,7 +439,7 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
     );
     return () => timers.forEach(clearTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginated, isPresale]);
+  }, [allFiltered, isPresale]);
 
   // ── 평균 통계 (필터+중복숨김 상태 반영) ──
   const tableStats = useMemo<TableStats>(() => {
@@ -460,9 +461,10 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
     if (isPresale) {
       const totals = a1Rows.map((p) => {
         const d = detailCache.get(p.articleNumber);
+        const ei = (d && d !== 'loading' && d !== 'error') ? d.isalePrice   : p.isalePrice;
         const ep = (d && d !== 'loading' && d !== 'error') ? d.premiumPrice : p.premiumPrice;
         const eo = (d && d !== 'loading' && d !== 'error') ? d.optionPrice  : p.optionPrice;
-        return p.dealPrice + ep + eo;
+        return ei + ep + eo;
       });
       avgPresaleTotal = Math.round(totals.reduce((s, v) => s + v, 0) / totals.length);
     }
@@ -482,7 +484,7 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
     const keys = ['midName', 'smallName', 'tradeType', 'complexName', 'dongName', 'floorInfo', 'direction', 'supplySpaceName'];
     areaCols.forEach((c) => keys.push(c.key));
     if (dataInfo.hasA1) keys.push('dealPrice', 'pyeongPrice');
-    if (isPresale) keys.push('premiumPrice', 'optionPrice', 'totalBuyPrice', 'realPyeongPrice');
+    if (isPresale) keys.push('isalePrice', 'premiumPrice', 'optionPrice', 'totalBuyPrice', 'realPyeongPrice');
     if (dataInfo.hasB) keys.push('warrantyPrice');
     if (dataInfo.hasB2) keys.push('rentPrice');
     keys.push('feature', 'brokerage');
@@ -496,6 +498,10 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
   );
 
   // ── Presale effective values (use detail cache if available) ──
+  const getEffIsale = (p: Property) => {
+    const d = detailCache.get(p.articleNumber);
+    return (d && d !== 'loading' && d !== 'error') ? d.isalePrice : p.isalePrice;
+  };
   const getEffPremium = (p: Property) => {
     const d = detailCache.get(p.articleNumber);
     return (d && d !== 'loading' && d !== 'error') ? d.premiumPrice : p.premiumPrice;
@@ -573,6 +579,11 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
             disabled={allFiltered.length === 0}>
             JSON 내보내기
           </button>
+          <button className="btn-outline btn-sm"
+            onClick={() => exportMarkdown(allFiltered, priceUnit, areaUnit, realEstateType, buildExportBaseName(meta, allFiltered.length))}
+            disabled={allFiltered.length === 0}>
+            MD 내보내기
+          </button>
         </div>
       </div>
 
@@ -600,6 +611,9 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
               )}
               {dataInfo.hasA1 && (
                 <Th colKey="pyeongPrice" label="평당가" sortK="pyeongPrice" {...thProps} />
+              )}
+              {isPresale && (
+                <Th colKey="isalePrice"      label="분양가"    sortK="isalePrice"     {...thProps} />
               )}
               {isPresale && (
                 <Th colKey="premiumPrice"    label="프리미엄"  sortK="premiumPrice"   {...thProps} />
@@ -651,9 +665,10 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
                 const isInSelectedGroup = !!(isDup && p.groupId && selectedGroupId === p.groupId);
                 const isHighlighted = selectedRow === rowKey || isInSelectedGroup;
 
+                const effIsale   = getEffIsale(p);
                 const effPremium = getEffPremium(p);
                 const effOption  = getEffOption(p);
-                const totalBuy   = p.dealPrice + effPremium + effOption;
+                const totalBuy   = effIsale + effPremium + effOption;
                 const presaleArea = presaleUseExclusive ? p.exclusiveSpace : p.supplySpace;
                 const realPyeong  = presaleArea * SQM_TO_PYEONG;
                 const realPyeongPrice = realPyeong > 0 ? totalBuy / realPyeong : 0;
@@ -734,6 +749,11 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
                       </td>
                     )}
 
+                    {isPresale && (
+                      <td className="td-price presale-col">
+                        {effIsale > 0 ? formatPriceByUnit(effIsale, priceUnit) : '-'}
+                      </td>
+                    )}
                     {isPresale && (
                       <td className="td-price presale-col">
                         {effPremium > 0 ? formatPriceByUnit(effPremium, priceUnit) : '-'}

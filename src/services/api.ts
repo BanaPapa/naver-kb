@@ -1,4 +1,4 @@
-import { Property, DIRECTION_LABELS, isExclusiveSpaceType, SavedSlot, SearchMeta, TRADE_TYPE_LABELS } from '../types';
+import { Property, DIRECTION_LABELS, TRADE_TYPE_LABELS, isExclusiveSpaceType, SavedSlot, SearchMeta } from '../types';
 import ExcelJS from 'exceljs';
 
 // =============================================
@@ -267,4 +267,92 @@ export function exportJSON(properties: Property[], filenameBase?: string): void 
   a.download = filenameBase ? `${filenameBase}.json` : `naver_properties_${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+export function exportMarkdown(
+  properties: Property[],
+  priceUnit: PriceUnit,
+  areaUnit: AreaUnit = 'sqm',
+  realEstateType = '',
+  filenameBase?: string,
+): void {
+  if (properties.length === 0) return;
+  const useContract = isExclusiveSpaceType(realEstateType);
+  const hasA1 = properties.some((p) => p.tradeType === 'A1');
+  const hasB  = properties.some((p) => p.tradeType === 'B1' || p.tradeType === 'B2');
+  const hasB2 = properties.some((p) => p.tradeType === 'B2');
+  const isPresale = realEstateType === 'ABYG' || realEstateType === 'OBYG';
+  const u = areaUnit === 'pyeong' ? '평' : '㎡';
+  const unitLabel = priceUnit === 'thousand' ? '천원' : '만원';
+  const sqmToPy = 0.3025;
+  const fmt = (sqm: number) => areaUnit === 'pyeong' ? `${(sqm * sqmToPy).toFixed(2)}평` : `${sqm}㎡`;
+
+  const headers: string[] = ['지역', '거래', '단지명', '동', '층', '방향', '타입',
+    `전용(${u})`, `${useContract ? '계약' : '공급'}(${u})`];
+  if (hasA1)     { headers.push(`매매가(${unitLabel})`, `평당가(${unitLabel})`); }
+  if (isPresale) { headers.push(`분양가(${unitLabel})`, `프리미엄(${unitLabel})`, `옵션비용(${unitLabel})`, `매수비용(${unitLabel})`, `실평당가(${unitLabel})`); }
+  if (hasB)      headers.push(`보증금(${unitLabel})`);
+  if (hasB2)     headers.push(`월세(${unitLabel})`);
+  headers.push('특징', '중개업소');
+
+  const sep = headers.map(() => '---').join(' | ');
+  const headerRow = headers.join(' | ');
+
+  const rows = properties.map((p) => {
+    const area = isExclusiveSpaceType(realEstateType) ? p.exclusiveSpace : p.supplySpace;
+    const pyeong = area * sqmToPy;
+    const pyeongPrice = pyeong > 0 && p.tradeType === 'A1' ? Math.round(p.dealPrice / pyeong) : 0;
+    const totalBuy = p.isalePrice + p.premiumPrice + p.optionPrice;
+    const realPP = pyeong > 0 && totalBuy > 0 ? Math.round(totalBuy / pyeong) : 0;
+
+    const cells: string[] = [
+      `${p.midName} ${p.smallName}`.trim() || '-',
+      TRADE_TYPE_LABELS[p.tradeType] ?? p.tradeType,
+      p.complexName || '-',
+      p.dongName || '-',
+      p.floorInfo || '-',
+      (DIRECTION_LABELS[p.direction] ?? p.direction).replace(/향$/, '') || '-',
+      p.supplySpaceName || '-',
+      fmt(p.exclusiveSpace),
+      fmt(useContract ? (p.contractSpace > 0 ? p.contractSpace : p.supplySpace) : p.supplySpace),
+    ];
+    if (hasA1) {
+      cells.push(
+        p.tradeType === 'A1' ? toPriceUnitStr(p.dealPrice, priceUnit) : '-',
+        p.tradeType === 'A1' && pyeongPrice > 0 ? toPriceUnitStr(p.dealPrice, priceUnit, pyeong) : '-',
+      );
+    }
+    if (isPresale) {
+      cells.push(
+        p.isalePrice > 0 ? formatPriceByUnit(p.isalePrice, priceUnit) : '-',
+        p.premiumPrice > 0 ? formatPriceByUnit(p.premiumPrice, priceUnit) : '-',
+        p.optionPrice > 0 ? formatPriceByUnit(p.optionPrice, priceUnit) : '-',
+        totalBuy > 0 ? formatPriceByUnit(totalBuy, priceUnit) : '-',
+        realPP > 0 ? formatPriceByUnit(realPP, priceUnit) : '-',
+      );
+    }
+    if (hasB)  cells.push((p.tradeType === 'B1' || p.tradeType === 'B2') ? formatPriceByUnit(p.warrantyPrice, priceUnit) : '-');
+    if (hasB2) cells.push(p.tradeType === 'B2' ? formatPriceByUnit(p.rentPrice, priceUnit) : '-');
+    cells.push(
+      (p.articleFeature || '-').replace(/\|/g, '∣'),
+      (cleanBrokerageName(p.brokerageName) || '-').replace(/\|/g, '∣'),
+    );
+    return cells.join(' | ');
+  });
+
+  const md = [`# 매물 조회 결과`, ``, `총 ${properties.length.toLocaleString()}건`, ``,
+    headerRow, sep, ...rows].join('\n');
+
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filenameBase ? `${filenameBase}.md` : `naver_properties_${new Date().toISOString().slice(0, 10)}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function toPriceUnitStr(priceWon: number, unit: PriceUnit, divideByPyeong?: number): string {
+  const base = divideByPyeong ? Math.round(priceWon / divideByPyeong) : priceWon;
+  return formatPriceByUnit(base, unit);
 }

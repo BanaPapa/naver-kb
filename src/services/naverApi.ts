@@ -511,6 +511,7 @@ export async function getArticleList(params: ArticleListParams): Promise<Article
 
 export interface ArticleDetailResult {
   detailDescription: string;
+  isalePrice: number;            // 원 단위 (API만원 × 10000) — 분양가
   premiumPrice: number;          // 원 단위 (API만원 × 10000)
   optionPrice: number;           // 원 단위 (API만원 × 10000)
   realtorName: string;
@@ -538,6 +539,7 @@ export async function getArticleDetail(
     const realtor = (data.articleRealtor ?? {}) as Record<string, unknown>;
     return {
       detailDescription:   String(detail.detailDescription   ?? ''),
+      isalePrice:          Number(price.isalePrice            ?? 0) * 10_000,
       premiumPrice:        Number(price.premiumPrice          ?? 0) * 10_000,
       optionPrice:         Number(price.optionPrice           ?? 0) * 10_000,
       realtorName:         String(realtor.realtorName         ?? ''),

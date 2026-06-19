@@ -55,18 +55,18 @@ export function CrawlModal({
           <div className={`cm-right${isDone || isStopped ? ' done' : ''}`}>
             {isDone || isStopped ? (
               <>
-                <div className={`cm-done-ic${isStopped ? ' stop' : ''}`}>
+                <h3 className="cm-done-title">
                   {isStopped ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
-                      <rect x="6" y="6" width="12" height="12" rx="2" />
+                    <svg className="cm-done-ic stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                      <rect x="5" y="5" width="14" height="14" rx="2.5" />
                     </svg>
                   ) : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
-                      <path d="M20 6L9 17l-5-5" />
+                    <svg className="cm-done-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   )}
-                </div>
-                <h3 className="cm-done-title">{isStopped ? '조회 중지됨' : '조회 완료'}</h3>
+                  {isStopped ? '조회 중지됨' : '조회 완료'}
+                </h3>
                 <p className="cm-done-sub">{regionName}</p>
 
                 <div className="cm-stats">
