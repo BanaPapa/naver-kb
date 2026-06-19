@@ -167,8 +167,11 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
   // 첫 수집 전(idle)에는 결과 영역(헤더 포함)을 대형 안내로 가린다.
   const showEmptyState = state.status === 'idle';
 
-  // 에이전트 미실행 또는 초기 상태(unknown)일 때 안내 화면 표시 (grace period 이후에만)
-  if (!stableRunning) {
+  // 에이전트 미실행 또는 초기 상태(unknown)일 때 안내 화면 표시 (grace period 이후에만).
+  // 단, 이미 수집된 데이터가 있으면 안내 화면으로 교체하지 않는다 — 브라우저 탭 전환 후
+  // 복귀 시 polling 순간 변동으로 결과 화면(SearchPanel/ResultTable)이 언마운트되어
+  // 검색조건·정렬·필터·상세가격 캐시가 초기화되던 문제 방지.
+  if (!stableRunning && state.properties.length === 0) {
     return (
       <div className="eos-state-screen">
         <div className="nv-agent-offline">
@@ -529,6 +532,7 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
 
           <ResultTable
             searchKey={searchKey}
+            status={state.status}
             properties={state.properties}
             realEstateType={state.searchType}
             areaUnit={areaUnit}

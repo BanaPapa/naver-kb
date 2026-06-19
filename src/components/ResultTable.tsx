@@ -19,6 +19,7 @@ export interface TableStats {
 
 interface ResultTableProps {
   searchKey: number;      // 새 검색마다 증가 — sort/filter 유지하되 캐시만 초기화
+  status: string;         // 크롤 상태 — 수집 완료(done/stopped) 후 분양권 가격 prefetch 트리거
   properties: Property[];
   realEstateType: string;
   areaUnit: AreaUnit;
@@ -297,7 +298,7 @@ interface ModalState {
   buyPrice?: number;    // acquisition-cost: 원 단위
 }
 
-export function ResultTable({ searchKey, properties, realEstateType, areaUnit, priceUnit, meta, userId, onStatsChange }: ResultTableProps) {
+export function ResultTable({ searchKey, status, properties, realEstateType, areaUnit, priceUnit, meta, userId, onStatsChange }: ResultTableProps) {
   const useContract = isExclusiveSpaceType(realEstateType);
   const isPresale   = isPresaleType(realEstateType);
   const presaleUseExclusive = realEstateType === 'OBYG';
@@ -352,7 +353,9 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
   const detailCacheRef = useRef<Map<string, CachedDetail>>(new Map());
   const ensureDetail = useCallback((p: Property) => {
     const key = p.articleNumber;
-    if (detailCacheRef.current.has(key)) return;
+    // 성공 결과 또는 진행 중이면 스킵. 'error'는 재시도 허용(일시적 오프라인 대비).
+    const cur = detailCacheRef.current.get(key);
+    if (cur && cur !== 'error') return;
     detailCacheRef.current.set(key, 'loading');
     setDetailCache(new Map(detailCacheRef.current));
     void getArticleDetail(key, p.complexNumber > 0 ? p.complexNumber : undefined)
@@ -595,6 +598,37 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
     onStatsChange?.(tableStats);
   }, [tableStats, onStatsChange]);
 
+  // 분양권 가격(분양가·프리미엄·옵션)은 fin.land 목록 API에 없고 new.land 상세 API에만 존재.
+  // 수집 완료 후 결과 전체를 1회 순차 prefetch → detailCache에 보관.
+  // 캐시는 searchKey 변경 시에만 초기화되므로 정렬·필터·페이지·브라우저 탭 전환에도 재요청 없음.
+  // 현재 보이는 페이지를 앞쪽에 배치해 화면의 행부터 우선 채운다.
+  useEffect(() => {
+    if (!isPresale) return;
+    if (status !== 'done' && status !== 'stopped') return;
+    if (properties.length === 0) return;
+
+    let cancelled = false;
+    const pageKeys = new Set(paginated.map((p) => p.articleNumber));
+    const ordered = [
+      ...properties.filter((p) => pageKeys.has(p.articleNumber)),
+      ...properties.filter((p) => !pageKeys.has(p.articleNumber)),
+    ];
+
+    (async () => {
+      for (const p of ordered) {
+        if (cancelled) return;
+        const cur = detailCacheRef.current.get(p.articleNumber);
+        if (cur && cur !== 'error') continue; // 이미 성공 캐시됨 → 스킵
+        ensureDetail(p);
+        await new Promise((r) => setTimeout(r, 160)); // 차단 회피용 간격
+      }
+    })();
+
+    return () => { cancelled = true; };
+    // paginated는 정렬·필터 시 바뀌지만, 캐시 가드 덕분에 이미 받은 항목은 재요청하지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPresale, status, searchKey, properties.length]);
+
   const hasActiveFilter = !!(complexFilter || tradeTypeFilter || filterText || spaceMin > 0 || spaceMax > 0);
 
   // 현재 페이지에서 각 단지의 첫 번째 매물 → 단지 정보 버튼 표시 대상
@@ -628,6 +662,7 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
   );
 
   // ── Presale effective values (use detail cache if available) ──
+  const isDetailLoading = (p: Property) => detailCache.get(p.articleNumber) === 'loading';
   const getEffIsale = (p: Property) => {
     const d = detailCache.get(p.articleNumber);
     return (d && d !== 'loading' && d !== 'error') ? d.isalePrice : p.isalePrice;
@@ -798,6 +833,7 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
                 const isInSelectedGroup = !!(isDup && p.groupId && selectedGroupId === p.groupId);
                 const isHighlighted = selectedRow === rowKey || isInSelectedGroup;
 
+                const loading     = isDetailLoading(p);
                 const effIsale   = getEffIsale(p);
                 const effPremium = getEffPremium(p);
                 const effOption  = getEffOption(p);
@@ -896,46 +932,52 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
 
                     {isPresale && (
                       <td className="td-price presale-col">
-                        {effIsale > 0 ? formatPriceByUnit(effIsale, priceUnit) : '-'}
+                        {loading ? <span className="td-loading">…</span>
+                          : effIsale > 0 ? formatPriceByUnit(effIsale, priceUnit) : '-'}
                       </td>
                     )}
                     {isPresale && (
                       <td className="td-pyeong presale-col">
-                        {effIsale > 0 && realPyeong > 0
-                          ? formatPriceByUnit(effIsale / realPyeong, priceUnit) : '-'}
+                        {loading ? <span className="td-loading">…</span>
+                          : effIsale > 0 && realPyeong > 0
+                            ? formatPriceByUnit(effIsale / realPyeong, priceUnit) : '-'}
                       </td>
                     )}
                     {isPresale && (
                       <td className="td-price presale-col">
-                        {effPremium > 0 ? formatPriceByUnit(effPremium, priceUnit) : '-'}
+                        {loading ? <span className="td-loading">…</span>
+                          : effPremium > 0 ? formatPriceByUnit(effPremium, priceUnit) : '-'}
                       </td>
                     )}
                     {isPresale && (
                       <td className="td-price presale-col">
-                        {effOption > 0 ? formatPriceByUnit(effOption, priceUnit) : '-'}
+                        {loading ? <span className="td-loading">…</span>
+                          : effOption > 0 ? formatPriceByUnit(effOption, priceUnit) : '-'}
                       </td>
                     )}
                     {isPresale && (
                       <td className="td-price presale-col presale-total">
                         <div className="td-price-inner">
-                          {totalBuy > 0 ? (
-                            <>
-                              <span className="price-value presale-main-price">{formatPriceByUnit(totalBuy, priceUnit)}</span>
-                              <button
-                                className="detail-plus-btn"
-                                title="매입비용 계산"
-                                onClick={(e) => { e.stopPropagation(); openAcquisitionModal(p, totalBuy); }}
-                              >+</button>
-                            </>
-                          ) : <span className="td-empty">-</span>}
+                          {loading ? <span className="td-loading">…</span>
+                            : totalBuy > 0 ? (
+                              <>
+                                <span className="price-value presale-main-price">{formatPriceByUnit(totalBuy, priceUnit)}</span>
+                                <button
+                                  className="detail-plus-btn"
+                                  title="매입비용 계산"
+                                  onClick={(e) => { e.stopPropagation(); openAcquisitionModal(p, totalBuy); }}
+                                >+</button>
+                              </>
+                            ) : <span className="td-empty">-</span>}
                         </div>
                       </td>
                     )}
                     {isPresale && (
                       <td className="td-pyeong presale-col">
-                        {realPyeongPrice > 0
-                          ? <span className="presale-main-price">{formatPriceByUnit(realPyeongPrice, priceUnit)}</span>
-                          : '-'}
+                        {loading ? <span className="td-loading">…</span>
+                          : realPyeongPrice > 0
+                            ? <span className="presale-main-price">{formatPriceByUnit(realPyeongPrice, priceUnit)}</span>
+                            : '-'}
                       </td>
                     )}
 

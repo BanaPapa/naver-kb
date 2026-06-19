@@ -2934,6 +2934,10 @@ thead .col-resize-handle:active {
 .td-empty {
   color: var(--muted-2);
 }
+.td-loading {
+  color: var(--muted-2);
+  font-size: 12px;
+}
 
 /* ── 중복 매물 행 ── */
 .row-duplicate td {
