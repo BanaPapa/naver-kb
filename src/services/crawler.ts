@@ -307,15 +307,32 @@ export class CrawlerService {
 
   // 분양권(ABYG/OBYG)은 목록 API에 분양가/프리미엄/옵션이 없으므로
   // 수집 완료 직후 new.land 상세 API로 매물별 가격을 채운다. (차단 회피용 순차 + 딜레이)
+  // → 단지 수집(1차 바) 완료 후 별도 2차 진행바를 추가해 진행 상황을 표시한다.
   private async enrichPresalePrices(ctx: RunContext): Promise<void> {
     const refs = ctx.presaleRefs;
     if (refs.length === 0 || this._stopRequested) return;
 
     const total = refs.length;
-    log(this.opts.onLog, 'info', `💰 분양권 가격 정보 수집 중… (0/${total})`);
+
+    // 2차 진행바(분양권 가격 조회) 추가 — 배너 표시는 CrawlProgressPanel이 phase로 판단
+    const presaleIndex = ctx.dongStates.length;
+    ctx.dongStates.push({
+      name: '개별 분양권 가격 조회',
+      status: 'pending',
+      pct: 0,
+      count: 0,
+      phase: 'presale-price',
+    });
+    this.emitDongs(ctx);
+
+    log(this.opts.onLog, 'info', `💰 분양권 가격 정보 수집 시작 (${total}건)…`);
+    this.patchDong(ctx, presaleIndex, { status: 'active' });
 
     for (let i = 0; i < total; i++) {
-      if (this._stopRequested) return;
+      if (this._stopRequested) {
+        this.patchDong(ctx, presaleIndex, { status: 'skipped' });
+        return;
+      }
       const { articleNumber, complexNumber } = refs[i];
       try {
         const detail = await getArticleDetail(
@@ -333,7 +350,10 @@ export class CrawlerService {
         // 개별 매물 실패는 무시 (가격은 '-'로 표시됨)
       }
 
-      // 진행 상황 갱신 (10건마다 + 마지막)
+      const pct = Math.round(((i + 1) / total) * 100);
+      this.patchDong(ctx, presaleIndex, { pct, count: i + 1 });
+
+      // 로그 갱신 (10건마다 + 마지막)
       if ((i + 1) % 10 === 0 || i + 1 === total) {
         log(this.opts.onLog, 'info', `💰 분양권 가격 정보 수집 중… (${i + 1}/${total})`);
         this.opts.onProgress({
@@ -348,6 +368,7 @@ export class CrawlerService {
       if (i < total - 1) await randomDelay(150, 400);
     }
 
+    this.patchDong(ctx, presaleIndex, { status: 'done', pct: 100, count: total });
     log(this.opts.onLog, 'success', `💰 분양권 가격 정보 수집 완료 (${total}건)`);
   }
 

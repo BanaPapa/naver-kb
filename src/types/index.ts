@@ -102,6 +102,7 @@ export interface DongProgress {
   pct: number;                           // 0~100
   count: number;                         // 그 동에서 수집된 건수
   indeterminate?: boolean;               // 총량 미상(빌라/단독/지산) → 펄스 애니메이션
+  phase?: 'presale-price';               // 분양권 가격 조회 전용 2차 진행바
 }
 
 export interface DoneSummary {

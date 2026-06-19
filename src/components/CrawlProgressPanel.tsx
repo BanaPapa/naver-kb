@@ -82,44 +82,58 @@ export function CrawlProgressPanel({
 
       <div className="cp-list">
         {dongs.map((d, i) => {
-          // 수집 중일 때 대기/진행 동만 건너뛰기 가능
-          const canSkip = isRunning && (d.status === 'pending' || d.status === 'active');
+          const isPresalePhase = d.phase === 'presale-price';
+          // 수집 중일 때 대기/진행 동만 건너뛰기 가능 (분양권 가격 조회 바는 Skip 없음)
+          const canSkip = isRunning && !isPresalePhase && (d.status === 'pending' || d.status === 'active');
           return (
-            <div
-              key={`${d.name}-${i}`}
-              ref={d.status === 'active' ? activeRef : undefined}
-              className={`cp-dong ${d.status}${d.status === 'done' && d.count === 0 ? ' empty' : ''}`}
-            >
-              <div className="cp-dong-main">
-                <div className="cp-dong-row">
-                  <span className="cp-nm">
-                    {d.status === 'active' ? '▸ ' : d.status === 'done' ? '✓ ' : d.status === 'skipped' ? '⏭ ' : ''}{d.name}
-                  </span>
-                  <span className="cp-ct">
-                    {d.status === 'done'
-                      ? d.count.toLocaleString()
-                      : d.status === 'active'
-                        ? `${d.pct}%`
-                        : d.status === 'skipped'
-                          ? '건너뜀'
-                          : '대기'}
-                  </span>
+            <React.Fragment key={`${d.name}-${i}`}>
+              {isPresalePhase && (
+                <div className="cp-presale-notice">
+                  <span className="cp-presale-ic">✓</span>
+                  <div>
+                    <div className="cp-presale-title">단지 조회 완료</div>
+                    <div className="cp-presale-msg">
+                      이어 개별 분양권 가격 조회를 시작합니다.<br />
+                      분양권 가격 조회는 시간이 많이 소요될 수 있습니다.
+                    </div>
+                  </div>
                 </div>
-                <div className="cp-bar">
-                  <i style={{ width: `${d.pct}%` }} />
-                </div>
-              </div>
-              {canSkip && (
-                <button
-                  type="button"
-                  className="cp-skip"
-                  onClick={() => onSkipDong(i)}
-                  title="이 지역 건너뛰기"
-                >
-                  Skip
-                </button>
               )}
-            </div>
+              <div
+                ref={d.status === 'active' ? activeRef : undefined}
+                className={`cp-dong ${d.status}${d.status === 'done' && d.count === 0 ? ' empty' : ''}${isPresalePhase ? ' presale-phase' : ''}`}
+              >
+                <div className="cp-dong-main">
+                  <div className="cp-dong-row">
+                    <span className="cp-nm">
+                      {d.status === 'active' ? '▸ ' : d.status === 'done' ? '✓ ' : d.status === 'skipped' ? '⏭ ' : ''}{d.name}
+                    </span>
+                    <span className="cp-ct">
+                      {d.status === 'done'
+                        ? (isPresalePhase ? `${d.count.toLocaleString()}건` : d.count.toLocaleString())
+                        : d.status === 'active'
+                          ? `${d.pct}%`
+                          : d.status === 'skipped'
+                            ? '건너뜀'
+                            : '대기'}
+                    </span>
+                  </div>
+                  <div className="cp-bar">
+                    <i style={{ width: `${d.pct}%` }} />
+                  </div>
+                </div>
+                {canSkip && (
+                  <button
+                    type="button"
+                    className="cp-skip"
+                    onClick={() => onSkipDong(i)}
+                    title="이 지역 건너뛰기"
+                  >
+                    Skip
+                  </button>
+                )}
+              </div>
+            </React.Fragment>
           );
         })}
       </div>
