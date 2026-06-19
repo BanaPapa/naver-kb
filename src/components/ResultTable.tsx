@@ -14,6 +14,7 @@ export interface TableStats {
 }
 
 interface ResultTableProps {
+  searchKey: number;      // 새 검색마다 증가 — sort/filter 유지하되 캐시만 초기화
   properties: Property[];
   realEstateType: string;
   areaUnit: AreaUnit;
@@ -26,7 +27,7 @@ interface ResultTableProps {
 type SortKey =
   | 'midName' | 'smallName' | 'tradeType' | 'complexName' | 'dongName' | 'floorInfo' | 'direction'
   | 'supplySpaceName' | 'supplySpace' | 'exclusiveSpace' | 'contractSpace' | 'dealPrice' | 'pyeongPrice'
-  | 'isalePrice' | 'premiumPrice' | 'optionPrice' | 'totalBuyPrice' | 'realPyeongPrice';
+  | 'isalePrice' | 'isalePyeong' | 'premiumPrice' | 'optionPrice' | 'totalBuyPrice' | 'realPyeongPrice';
 type SortDir = 'asc' | 'desc';
 
 const PAGE_SIZE     = 50;
@@ -40,7 +41,7 @@ const DEFAULT_COL_WIDTHS: Record<string, number> = {
   dongName: 52, floorInfo: 62, direction: 52, supplySpaceName: 64,
   exclusiveSpace: 88, supplySpace: 88,
   dealPrice: 110, pyeongPrice: 110,
-  isalePrice: 104, premiumPrice: 96, optionPrice: 96, totalBuyPrice: 110, realPyeongPrice: 110,
+  isalePrice: 104, isalePyeong: 110, premiumPrice: 72, optionPrice: 88, totalBuyPrice: 110, realPyeongPrice: 120,
   warrantyPrice: 110, rentPrice: 84,
   feature: 200, brokerage: 200,
 };
@@ -99,13 +100,18 @@ function getSortValue(p: Property, key: SortKey, realEstateType: string): number
   if (key === 'dealPrice')     return priceSortValue(p);
   if (key === 'pyeongPrice')   return pyeongUnitPriceWon(p, realEstateType);
   if (key === 'isalePrice')    return p.isalePrice;
+  if (key === 'isalePyeong') {
+    const area = realEstateType === 'OBYG' ? p.exclusiveSpace : p.supplySpace;
+    const pyeong = area * SQM_TO_PYEONG;
+    return pyeong > 0 && p.isalePrice > 0 ? p.isalePrice / pyeong : 0;
+  }
   if (key === 'premiumPrice')  return p.premiumPrice;
   if (key === 'optionPrice')   return p.optionPrice;
   if (key === 'totalBuyPrice') return p.isalePrice + p.premiumPrice + p.optionPrice;
   if (key === 'realPyeongPrice') {
     const area = realEstateType === 'OBYG' ? p.exclusiveSpace : p.supplySpace;
     const pyeong = area * SQM_TO_PYEONG;
-    return pyeong > 0 ? (p.dealPrice + p.premiumPrice + p.optionPrice) / pyeong : 0;
+    return pyeong > 0 ? (p.isalePrice + p.premiumPrice + p.optionPrice) / pyeong : 0;
   }
   if (key === 'supplySpace')   return p.supplySpace;
   if (key === 'exclusiveSpace') return p.exclusiveSpace;
@@ -217,7 +223,7 @@ interface ModalState {
   brokerageName: string;
 }
 
-export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, meta, userId, onStatsChange }: ResultTableProps) {
+export function ResultTable({ searchKey, properties, realEstateType, areaUnit, priceUnit, meta, userId, onStatsChange }: ResultTableProps) {
   const useContract = isExclusiveSpaceType(realEstateType);
   const isPresale   = isPresaleType(realEstateType);
   const presaleUseExclusive = realEstateType === 'OBYG';
@@ -240,6 +246,21 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
 
   // Sync colWidths when userId changes (login/logout)
   useEffect(() => { setColWidths(loadColWidths(userId)); }, [userId]);
+
+  // 새 검색 감지: sort/filter는 유지하고 페이지·단지필터·상세캐시만 초기화
+  const prevSearchKeyRef = useRef(searchKey);
+  useEffect(() => {
+    if (prevSearchKeyRef.current === searchKey) return;
+    prevSearchKeyRef.current = searchKey;
+    setPage(0);
+    setComplexFilter('');
+    setExpandedGroups(new Set());
+    setSelectedRow(null);
+    setSelectedGroupId(null);
+    setModalState(null);
+    detailCacheRef.current = new Map();
+    setDetailCache(new Map());
+  }, [searchKey]);
 
   const priceUnitLabel = priceUnit === 'thousand' ? '천원' : '만원';
 
@@ -426,11 +447,36 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
     filterText, sortKey, sortDir, page, realEstateType, isDupHidden, expandedGroups,
   ]);
 
-  // 분양권 자동 detail 패치 (isalePrice/프리미엄/옵션비용은 fin.land 목록 API에 없음)
-  // ※ allFiltered 전체를 대상으로 fetch → 정렬/필터 변경 시에도 이미 캐시된 값을 즉시 표시
+  // 분양권 fetch 대상: 필터만 적용 (sort 제외) → 정렬 변경 시 in-flight 타이머 취소 방지
+  const filteredForFetch = useMemo(() => {
+    let fil = [...properties];
+    if (complexFilter)   fil = fil.filter((p) => p.complexName === complexFilter);
+    if (tradeTypeFilter) fil = fil.filter((p) => p.tradeType   === tradeTypeFilter);
+    if (spaceMin > 0 || spaceMax > 0) {
+      const toSqm = (v: number) => areaUnit === 'pyeong' ? v * PYEONG_TO_SQM : v;
+      const lo = spaceMin > 0 ? toSqm(spaceMin) : 0;
+      const hi = spaceMax > 0 ? toSqm(spaceMax) : Number.POSITIVE_INFINITY;
+      fil = fil.filter((p) => {
+        if (p.supplySpace <= 0 && p.exclusiveSpace <= 0) return true;
+        return (p.supplySpace    > 0 && p.supplySpace    >= lo && p.supplySpace    <= hi) ||
+               (p.exclusiveSpace > 0 && p.exclusiveSpace >= lo && p.exclusiveSpace <= hi);
+      });
+    }
+    if (filterText.trim()) {
+      const q = filterText.trim().toLowerCase();
+      fil = fil.filter((p) =>
+        p.complexName.toLowerCase().includes(q) ||
+        p.dongName.toLowerCase().includes(q)    ||
+        p.articleFeature.toLowerCase().includes(q),
+      );
+    }
+    return fil;
+  }, [properties, complexFilter, tradeTypeFilter, spaceMin, spaceMax, areaUnit, filterText]);
+
+  // 분양권 자동 detail 패치: filteredForFetch 기준 → 정렬 변경 시 타이머 재시작 없음
   useEffect(() => {
     if (!isPresale) return;
-    const toFetch = allFiltered.filter((p) => !detailCacheRef.current.has(p.articleNumber));
+    const toFetch = filteredForFetch.filter((p) => !detailCacheRef.current.has(p.articleNumber));
     if (toFetch.length === 0) return;
     const timers = toFetch.map((p, i) =>
       setTimeout(() => {
@@ -439,7 +485,7 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
     );
     return () => timers.forEach(clearTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allFiltered, isPresale]);
+  }, [filteredForFetch, isPresale]);
 
   // ── 평균 통계 (필터+중복숨김 상태 반영) ──
   const tableStats = useMemo<TableStats>(() => {
@@ -483,8 +529,8 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
   const activeColKeys = useMemo(() => {
     const keys = ['midName', 'smallName', 'tradeType', 'complexName', 'dongName', 'floorInfo', 'direction', 'supplySpaceName'];
     areaCols.forEach((c) => keys.push(c.key));
-    if (dataInfo.hasA1) keys.push('dealPrice', 'pyeongPrice');
-    if (isPresale) keys.push('isalePrice', 'premiumPrice', 'optionPrice', 'totalBuyPrice', 'realPyeongPrice');
+    if (!isPresale && dataInfo.hasA1) keys.push('dealPrice', 'pyeongPrice');
+    if (isPresale) keys.push('isalePrice', 'isalePyeong', 'premiumPrice', 'optionPrice', 'totalBuyPrice', 'realPyeongPrice');
     if (dataInfo.hasB) keys.push('warrantyPrice');
     if (dataInfo.hasB2) keys.push('rentPrice');
     keys.push('feature', 'brokerage');
@@ -606,26 +652,29 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
               {areaCols.map((col) => (
                 <Th key={col.key} colKey={col.key} label={col.label} sortK={col.sortK} {...thProps} />
               ))}
-              {dataInfo.hasA1 && (
+              {!isPresale && dataInfo.hasA1 && (
                 <Th colKey="dealPrice"  label="매매가"  sortK="dealPrice"  {...thProps} />
               )}
-              {dataInfo.hasA1 && (
+              {!isPresale && dataInfo.hasA1 && (
                 <Th colKey="pyeongPrice" label="평당가" sortK="pyeongPrice" {...thProps} />
               )}
               {isPresale && (
-                <Th colKey="isalePrice"      label="분양가"    sortK="isalePrice"     {...thProps} />
+                <Th colKey="isalePrice"      label="분양가"       sortK="isalePrice"      {...thProps} />
               )}
               {isPresale && (
-                <Th colKey="premiumPrice"    label="프리미엄"  sortK="premiumPrice"   {...thProps} />
+                <Th colKey="isalePyeong"     label="평당가(분양)" sortK="isalePyeong"     {...thProps} />
               )}
               {isPresale && (
-                <Th colKey="optionPrice"     label="옵션비용"  sortK="optionPrice"    {...thProps} />
+                <Th colKey="premiumPrice"    label="P"            sortK="premiumPrice"    {...thProps} />
               )}
               {isPresale && (
-                <Th colKey="totalBuyPrice"   label="매수비용"  sortK="totalBuyPrice"  {...thProps} />
+                <Th colKey="optionPrice"     label="옵션비용"     sortK="optionPrice"     {...thProps} />
               )}
               {isPresale && (
-                <Th colKey="realPyeongPrice" label="실평당가"  sortK="realPyeongPrice" {...thProps} />
+                <Th colKey="totalBuyPrice"   label="매매가"       sortK="totalBuyPrice"   {...thProps} />
+              )}
+              {isPresale && (
+                <Th colKey="realPyeongPrice" label="평당가(분양권)" sortK="realPyeongPrice" {...thProps} />
               )}
               {dataInfo.hasB && (
                 <Th colKey="warrantyPrice" label="보증금" sortK="dealPrice" {...thProps} />
@@ -728,8 +777,8 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
                       <td key={col.key} className="td-space">{col.render(p)}</td>
                     ))}
 
-                    {dataInfo.hasA1 && (
-                      <td className={`td-price${!isPresale && p.tradeType === 'A1' ? ' price-accent' : ''}`}>
+                    {!isPresale && dataInfo.hasA1 && (
+                      <td className={`td-price${p.tradeType === 'A1' ? ' price-accent' : ''}`}>
                         <div className="td-price-inner">
                           {p.tradeType === 'A1' ? (
                             <>
@@ -741,8 +790,8 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
                       </td>
                     )}
 
-                    {dataInfo.hasA1 && (
-                      <td className={`td-pyeong${!isPresale && p.tradeType === 'A1' ? ' price-accent' : ''}`}>
+                    {!isPresale && dataInfo.hasA1 && (
+                      <td className={`td-pyeong${p.tradeType === 'A1' ? ' price-accent' : ''}`}>
                         {p.tradeType === 'A1'
                           ? formatPriceByUnit(pyeongUnitPriceWon(p, realEstateType), priceUnit)
                           : '-'}
@@ -752,6 +801,12 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
                     {isPresale && (
                       <td className="td-price presale-col">
                         {effIsale > 0 ? formatPriceByUnit(effIsale, priceUnit) : '-'}
+                      </td>
+                    )}
+                    {isPresale && (
+                      <td className="td-pyeong presale-col">
+                        {effIsale > 0 && realPyeong > 0
+                          ? formatPriceByUnit(effIsale / realPyeong, priceUnit) : '-'}
                       </td>
                     )}
                     {isPresale && (

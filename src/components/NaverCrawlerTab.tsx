@@ -517,7 +517,7 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
           </div>
 
           <ResultTable
-            key={searchKey}
+            searchKey={searchKey}
             properties={state.properties}
             realEstateType={state.searchType}
             areaUnit={areaUnit}
