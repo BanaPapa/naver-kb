@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { SearchPanel } from './SearchPanel';
 import { Monitor } from './Monitor';
-import { ResultTable } from './ResultTable';
+import { ResultTable, TableStats } from './ResultTable';
 import { CrawlModal } from './CrawlModal';
 import { SlotModal } from './SlotModal';
 import { InfoModal } from './InfoModal';
@@ -31,6 +31,7 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
   const [priceUnit, setPriceUnit] = useState<PriceUnit>('thousand');
   const [ctrlCollapsed, setCtrlCollapsed] = useState(false);
   const [crawlModalOpen, setCrawlModalOpen] = useState(false);
+  const [tableStats, setTableStats] = useState<TableStats | null>(null);
   const [slotModalOpen, setSlotModalOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [showInstallModal, setShowInstallModal] = useState(false);
@@ -435,6 +436,9 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
           progress={state.progress}
           summary={state.summary}
           propertyCount={state.properties.length}
+          tableStats={tableStats}
+          priceUnit={priceUnit}
+          isPresale={state.searchType === 'ABYG' || state.searchType === 'OBYG'}
         />
 
         <div className="eos-card grow nv-result-card">
@@ -520,6 +524,7 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
             priceUnit={priceUnit}
             meta={state.meta}
             userId={session?.user?.id ?? null}
+            onStatsChange={setTableStats}
           />
           </>
           )}

@@ -6,6 +6,13 @@ import {
 } from '../services/api';
 import { getArticleDetail, ArticleDetailResult } from '../services/naverApi';
 
+export interface TableStats {
+  avgDealPrice: number;    // 원 단위
+  avgPyeongPrice: number;  // 원/평 단위
+  avgPresaleTotal: number; // 원 단위 (분양권 총 매수비용, 0 if non-presale)
+  count: number;           // 평균 계산 대상 매물 수
+}
+
 interface ResultTableProps {
   properties: Property[];
   realEstateType: string;
@@ -13,6 +20,7 @@ interface ResultTableProps {
   priceUnit: PriceUnit;
   meta: SearchMeta;
   userId: string | null;
+  onStatsChange?: (stats: TableStats) => void;
 }
 
 type SortKey =
@@ -208,7 +216,7 @@ interface ModalState {
   brokerageName: string;
 }
 
-export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, meta, userId }: ResultTableProps) {
+export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, meta, userId, onStatsChange }: ResultTableProps) {
   const useContract = isExclusiveSpaceType(realEstateType);
   const isPresale   = isPresaleType(realEstateType);
   const presaleUseExclusive = realEstateType === 'OBYG';
@@ -432,6 +440,40 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paginated, isPresale]);
 
+  // ── 평균 통계 (필터+중복숨김 상태 반영) ──
+  const tableStats = useMemo<TableStats>(() => {
+    const rows = isDupHidden ? filteredReps : allFiltered;
+    const a1Rows = rows.filter((p) => p.tradeType === 'A1');
+    if (a1Rows.length === 0) return { avgDealPrice: 0, avgPyeongPrice: 0, avgPresaleTotal: 0, count: 0 };
+
+    const avgDealPrice = Math.round(a1Rows.reduce((s, p) => s + p.dealPrice, 0) / a1Rows.length);
+
+    const withArea = a1Rows.filter((p) => {
+      const area = isExclusiveSpaceType(realEstateType) ? p.exclusiveSpace : p.supplySpace;
+      return area > 0;
+    });
+    const avgPyeongPrice = withArea.length > 0
+      ? Math.round(withArea.reduce((s, p) => s + pyeongUnitPriceWon(p, realEstateType), 0) / withArea.length)
+      : 0;
+
+    let avgPresaleTotal = 0;
+    if (isPresale) {
+      const totals = a1Rows.map((p) => {
+        const d = detailCache.get(p.articleNumber);
+        const ep = (d && d !== 'loading' && d !== 'error') ? d.premiumPrice : p.premiumPrice;
+        const eo = (d && d !== 'loading' && d !== 'error') ? d.optionPrice  : p.optionPrice;
+        return p.dealPrice + ep + eo;
+      });
+      avgPresaleTotal = Math.round(totals.reduce((s, v) => s + v, 0) / totals.length);
+    }
+
+    return { avgDealPrice, avgPyeongPrice, avgPresaleTotal, count: a1Rows.length };
+  }, [filteredReps, allFiltered, isDupHidden, realEstateType, isPresale, detailCache]);
+
+  useEffect(() => {
+    onStatsChange?.(tableStats);
+  }, [tableStats, onStatsChange]);
+
   const hasActiveFilter = !!(complexFilter || tradeTypeFilter || filterText || spaceMin > 0 || spaceMax > 0);
   const areaCols = useMemo(() => buildAreaCols(areaUnit, useContract), [areaUnit, useContract]);
 
@@ -554,28 +596,28 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
                 <Th key={col.key} colKey={col.key} label={col.label} sortK={col.sortK} {...thProps} />
               ))}
               {dataInfo.hasA1 && (
-                <Th colKey="dealPrice"  label={`매매가(${priceUnitLabel})`}  sortK="dealPrice"  {...thProps} />
+                <Th colKey="dealPrice"  label="매매가"  sortK="dealPrice"  {...thProps} />
               )}
               {dataInfo.hasA1 && (
-                <Th colKey="pyeongPrice" label={`평당가(${priceUnitLabel})`} sortK="pyeongPrice" {...thProps} />
+                <Th colKey="pyeongPrice" label="평당가" sortK="pyeongPrice" {...thProps} />
               )}
               {isPresale && (
-                <Th colKey="premiumPrice"   label={`프리미엄(${priceUnitLabel})`}  sortK="premiumPrice"   {...thProps} />
+                <Th colKey="premiumPrice"    label="프리미엄"  sortK="premiumPrice"   {...thProps} />
               )}
               {isPresale && (
-                <Th colKey="optionPrice"    label={`옵션비용(${priceUnitLabel})`}  sortK="optionPrice"    {...thProps} />
+                <Th colKey="optionPrice"     label="옵션비용"  sortK="optionPrice"    {...thProps} />
               )}
               {isPresale && (
-                <Th colKey="totalBuyPrice"  label={`매수비용(${priceUnitLabel})`}  sortK="totalBuyPrice"  {...thProps} />
+                <Th colKey="totalBuyPrice"   label="매수비용"  sortK="totalBuyPrice"  {...thProps} />
               )}
               {isPresale && (
-                <Th colKey="realPyeongPrice" label={`실평당가(${priceUnitLabel})`} sortK="realPyeongPrice" {...thProps} />
+                <Th colKey="realPyeongPrice" label="실평당가"  sortK="realPyeongPrice" {...thProps} />
               )}
               {dataInfo.hasB && (
-                <Th colKey="warrantyPrice" label={`보증금(${priceUnitLabel})`} sortK="dealPrice" {...thProps} />
+                <Th colKey="warrantyPrice" label="보증금" sortK="dealPrice" {...thProps} />
               )}
               {dataInfo.hasB2 && (
-                <Th colKey="rentPrice" label={`월세(${priceUnitLabel})`} curSortKey={sortKey} curSortDir={sortDir} onSort={handleSort} onResizeStart={handleResizeStart} />
+                <Th colKey="rentPrice" label="월세" curSortKey={sortKey} curSortDir={sortDir} onSort={handleSort} onResizeStart={handleResizeStart} />
               )}
               <Th colKey="feature"   label="특징"     {...thProps} />
               <Th colKey="brokerage" label="중개업소" {...thProps} />
@@ -672,7 +714,7 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
                     ))}
 
                     {dataInfo.hasA1 && (
-                      <td className="td-price">
+                      <td className={`td-price${!isPresale && p.tradeType === 'A1' ? ' price-accent' : ''}`}>
                         <div className="td-price-inner">
                           {p.tradeType === 'A1' ? (
                             <>
@@ -685,7 +727,7 @@ export function ResultTable({ properties, realEstateType, areaUnit, priceUnit, m
                     )}
 
                     {dataInfo.hasA1 && (
-                      <td className="td-pyeong">
+                      <td className={`td-pyeong${!isPresale && p.tradeType === 'A1' ? ' price-accent' : ''}`}>
                         {p.tradeType === 'A1'
                           ? formatPriceByUnit(pyeongUnitPriceWon(p, realEstateType), priceUnit)
                           : '-'}

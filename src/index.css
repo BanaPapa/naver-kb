@@ -1293,9 +1293,9 @@ body {
   border: 0;
   font-family: inherit;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--blue), var(--purple-2));
-  box-shadow: 0 12px 26px -10px var(--blue-dim), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-  transition: transform 0.16s var(--ease), filter 0.16s;
+  background: var(--blue);
+  box-shadow: 0 6px 18px -6px var(--blue-dim), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  transition: transform 0.16s var(--ease), filter 0.16s, background 0.16s;
 }
 .eos-run-btn:hover:not(:disabled) {
   transform: translateY(-1px);
@@ -1395,12 +1395,17 @@ body {
 /* ---------- KPI strip (Monitor) ---------- */
 .eos-kpis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 14px;
   margin-bottom: 16px;
   flex: none;
 }
-@media (max-width: 1180px) {
+@media (max-width: 1400px) {
+  .eos-kpis {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 900px) {
   .eos-kpis {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1454,8 +1459,17 @@ body {
 .eos-kpi.b::after,
 .eos-kpi.t::after,
 .eos-kpi.p::after,
-.eos-kpi.a::after {
+.eos-kpi.a::after,
+.eos-kpi.avg::after,
+.eos-kpi.pyeong::after {
   background: var(--blue);
+}
+
+/* 분양권 평균 하단 부연 텍스트 */
+.kd-presale {
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 /* Monitor 진행 바 (KPI 스트립 아래) */
@@ -1730,31 +1744,33 @@ body {
 }
 .space-unit-toggle {
   display: flex;
-  gap: 3px;
-  background: var(--surface);
+  gap: 2px;
+  background: var(--surface-2);
   border-radius: 8px;
   padding: 3px;
   box-shadow: inset 0 0 0 1px var(--border);
 }
 .space-unit-btn {
-  padding: 4px 10px;
+  padding: 5px 13px;
   border: 0;
   border-radius: 6px;
   background: transparent;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
-  transition: 0.15s;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
 }
 .space-unit-btn:hover:not(:disabled) {
   color: var(--fg-2);
+  background: var(--surface-2);
 }
 .space-unit-btn.active {
-  background: var(--raise);
-  color: var(--fg);
-  box-shadow: inset 0 0 0 1px var(--border-2);
-  font-weight: 600;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px -2px var(--blue-dim);
 }
 .space-unit-btn:disabled {
   opacity: 0.45;
@@ -2041,9 +2057,11 @@ input[type='range'].space-range:disabled {
   gap: 7px;
 }
 .result-unit-label {
-  font-size: 17.5px;
-  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-2);
   white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 .result-table-container {
   display: flex;
@@ -2240,10 +2258,20 @@ thead .col-resize-handle:active {
 
 /* ── 분양권 추가 열 강조 ── */
 .presale-col {
-  color: var(--teal) !important;
+  color: var(--blue) !important;
 }
 .presale-total {
   font-weight: 700;
+}
+
+/* ── 일반 매물 매매가/평당가 하이라이트 ── */
+.result-table tbody td.price-accent {
+  color: var(--blue) !important;
+  font-weight: 700;
+}
+.row-duplicate td.price-accent {
+  color: var(--muted) !important;
+  font-weight: 500;
 }
 
 /* ── 상세/중개업소 모달 ── */
