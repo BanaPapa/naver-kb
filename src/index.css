@@ -2406,12 +2406,59 @@ thead .col-resize-handle:active {
   text-align: center;
 }
 
-/* ── 내보내기 확인 모달 ── */
-.export-confirm-desc {
+/* ── 내보내기 옵션 확인 모달 ── */
+.export-option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.export-option-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.export-option-cards {
+  display: flex;
+  gap: 10px;
+}
+.export-option-card {
+  flex: 1;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.export-option-card:hover {
+  background: var(--surface-3);
+}
+.export-option-card.active {
+  border-color: var(--blue);
+  background: var(--blue-dim);
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+.eoc-title {
+  display: block;
   font-size: 14.5px;
-  line-height: 1.65;
-  color: var(--fg-2);
-  margin: 0;
+  font-weight: 700;
+  color: var(--fg);
+}
+.export-option-card.active .eoc-title {
+  color: var(--blue);
+}
+.eoc-sub {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.export-confirm-go {
+  margin-top: 6px;
 }
 
 /* ── 내보내기 진행(데이터 포장 중) 모달 ── */

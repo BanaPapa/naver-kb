@@ -325,7 +325,15 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [exportFetchProgress, setExportFetchProgress] = useState<{ current: number; total: number } | null>(null);
   const [exportConfirm, setExportConfirm]   = useState<ExportFormat | null>(null);
+  const [exportIncludeDup, setExportIncludeDup]       = useState(true);
+  const [exportIncludeDetail, setExportIncludeDetail] = useState(false);
   const exportCancelRef = useRef(false);
+
+  const openExportConfirm = useCallback((format: ExportFormat) => {
+    setExportIncludeDup(true);
+    setExportIncludeDetail(false);
+    setExportConfirm(format);
+  }, []);
 
   // Sync colWidths when userId changes (login/logout)
   useEffect(() => { setColWidths(loadColWidths(userId)); }, [userId]);
@@ -570,8 +578,8 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
 
   // 내보내기: 상세특징/중개업소 정보는 "+" 버튼을 눌러야만 채워지는 지연 캐시이므로,
   // 사용자가 포함을 선택한 경우에만 캐시에 없는 매물을 상세 API로 보강 수집한다 (차단 회피용 순차 + 딜레이).
-  const performExport = useCallback(async (format: ExportFormat, includeDetail: boolean) => {
-    const rows = allFiltered;
+  const performExport = useCallback(async (format: ExportFormat, includeDetail: boolean, includeDup: boolean) => {
+    const rows = includeDup ? allFiltered : filteredReps;
     if (rows.length === 0) return;
     const filenameBase = buildExportBaseName(meta, rows.length);
 
@@ -609,7 +617,7 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
     } else {
       exportMarkdown(rows, priceUnit, areaUnit, realEstateType, filenameBase, detailArg);
     }
-  }, [allFiltered, priceUnit, areaUnit, realEstateType, meta]);
+  }, [allFiltered, filteredReps, priceUnit, areaUnit, realEstateType, meta]);
 
   // ── 평균 통계 (필터+중복숨김 상태 반영) ──
   const tableStats = useMemo<TableStats>(() => {
@@ -787,17 +795,17 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
             value={filterText} onChange={(e) => { setFilterText(e.target.value); setPage(0); }} />
 
           <button className="btn-outline btn-sm"
-            onClick={() => setExportConfirm('excel')}
+            onClick={() => openExportConfirm('excel')}
             disabled={allFiltered.length === 0}>
             Excel 내보내기
           </button>
           <button className="btn-outline btn-sm"
-            onClick={() => setExportConfirm('json')}
+            onClick={() => openExportConfirm('json')}
             disabled={allFiltered.length === 0}>
             JSON 내보내기
           </button>
           <button className="btn-outline btn-sm"
-            onClick={() => setExportConfirm('md')}
+            onClick={() => openExportConfirm('md')}
             disabled={allFiltered.length === 0}>
             MD 내보내기
           </button>
@@ -1136,34 +1144,57 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
         </div>
       )}
 
-      {/* 내보내기 시 상세특징/중개업소 상세정보 포함 여부 확인 모달 */}
+      {/* 내보내기 옵션 확인 모달 — 중복 매물 포함 여부 + 상세정보 포함 여부 */}
       {exportConfirm && (
         <div className="modal-overlay" onClick={() => setExportConfirm(null)}>
           <div className="modal-card detail-modal-card" onClick={(e) => e.stopPropagation()}>
             <button className="cm-close" onClick={() => setExportConfirm(null)}>✕</button>
             <div className="detail-modal-content">
-              <h3 className="detail-modal-title">상세정보 포함 여부</h3>
-              <p className="export-confirm-desc">
-                매매가 옆 + 버튼(상세특징)과 중개업소 + 버튼(업소명·주소·연락처·매물 수) 정보를
-                {' '}{EXPORT_FORMAT_LABEL[exportConfirm]} 내보내기에 포함할까요?
-                <br />포함하면 매물별로 추가 조회가 필요해 매물 수가 많을 경우 시간이 걸릴 수 있습니다.
-              </p>
-              <div className="confirm-actions">
-                <button className="confirm-btn" onClick={() => {
-                  const format = exportConfirm;
-                  setExportConfirm(null);
-                  void performExport(format, false);
-                }}>
-                  현재 데이터만
-                </button>
-                <button className="confirm-btn" onClick={() => {
-                  const format = exportConfirm;
-                  setExportConfirm(null);
-                  void performExport(format, true);
-                }}>
-                  상세정보 포함
-                </button>
+              <h3 className="detail-modal-title">{EXPORT_FORMAT_LABEL[exportConfirm]} 내보내기 옵션</h3>
+
+              <div className="export-option-group">
+                <span className="export-option-label">중복 매물</span>
+                <div className="export-option-cards">
+                  <button type="button"
+                    className={`export-option-card${exportIncludeDup ? ' active' : ''}`}
+                    onClick={() => setExportIncludeDup(true)}>
+                    <span className="eoc-title">중복 매물 포함</span>
+                    <span className="eoc-sub">전체 {allFiltered.length.toLocaleString()}건</span>
+                  </button>
+                  <button type="button"
+                    className={`export-option-card${!exportIncludeDup ? ' active' : ''}`}
+                    onClick={() => setExportIncludeDup(false)}>
+                    <span className="eoc-title">대표 매물만</span>
+                    <span className="eoc-sub">{filteredReps.length.toLocaleString()}건</span>
+                  </button>
+                </div>
               </div>
+
+              <div className="export-option-group">
+                <span className="export-option-label">상세정보</span>
+                <div className="export-option-cards">
+                  <button type="button"
+                    className={`export-option-card${!exportIncludeDetail ? ' active' : ''}`}
+                    onClick={() => setExportIncludeDetail(false)}>
+                    <span className="eoc-title">현재 데이터만</span>
+                    <span className="eoc-sub">즉시 내보내기</span>
+                  </button>
+                  <button type="button"
+                    className={`export-option-card${exportIncludeDetail ? ' active' : ''}`}
+                    onClick={() => setExportIncludeDetail(true)}>
+                    <span className="eoc-title">상세정보 포함</span>
+                    <span className="eoc-sub">상세특징·중개업소 정보 추가 조회</span>
+                  </button>
+                </div>
+              </div>
+
+              <button className="eos-run-btn export-confirm-go" onClick={() => {
+                const format = exportConfirm;
+                setExportConfirm(null);
+                void performExport(format, exportIncludeDetail, exportIncludeDup);
+              }}>
+                내보내기
+              </button>
             </div>
           </div>
         </div>
