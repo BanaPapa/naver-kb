@@ -89,7 +89,7 @@ function addPropertiesWorksheet(
     { header: '중지역', key: 'midName',         width: 10 },
     { header: '소지역', key: 'smallName',        width: 10 },
     { header: '거래',   key: 'tradeType',        width: 8  },
-    { header: '단지명', key: 'complexName',      width: 40 },
+    { header: '단지명', key: 'complexName',      width: 30 },
     { header: '동',     key: 'dongName',         width: 10 },
     { header: '층',     key: 'floorInfo',        width: 10 },
     { header: '방향',   key: 'direction',        width: 10 },
@@ -115,7 +115,7 @@ function addPropertiesWorksheet(
   if (hasB2) cols.push({ header: `월세(${unitLabel})`,   key: 'rentPrice',     width: 10 });
 
   cols.push({ header: '특징', key: 'articleFeature', width: 70 });
-  if (detailMap) cols.push({ header: '상세특징', key: 'detailDescription', width: 30 });
+  if (detailMap) cols.push({ header: '상세특징', key: 'detailDescription', width: 100 });
   cols.push({ header: '중개업소', key: 'brokerageName', width: 30 });
   if (detailMap) {
     // 업소명은 중개업소와 동일한 내용이므로 제외
