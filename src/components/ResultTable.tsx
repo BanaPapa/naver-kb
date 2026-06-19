@@ -4,7 +4,11 @@ import {
   formatPriceByUnit, formatDirection, cleanBrokerageName, pyeongUnitPriceWon,
   exportExcel, exportJSON, exportMarkdown, buildExportBaseName, PriceUnit, AreaUnit,
 } from '../services/api';
-import { getArticleDetail, ArticleDetailResult } from '../services/naverApi';
+import {
+  getArticleDetail, ArticleDetailResult,
+  getComplexDetail, ComplexDetailResult,
+  getAcquisitionCost, AcquisitionCostResult,
+} from '../services/naverApi';
 
 export interface TableStats {
   avgDealPrice: number;    // 원 단위
@@ -163,7 +167,9 @@ function Th({ colKey, label, sortK, curSortKey, curSortDir, onSort, onResizeStar
 }
 
 // ─── Detail modals ────────────────────────────────────────────────────────────
-type CachedDetail = ArticleDetailResult | 'loading' | 'error';
+type CachedDetail         = ArticleDetailResult   | 'loading' | 'error';
+type CachedComplexDetail  = ComplexDetailResult   | 'loading' | 'error';
+type CachedAcquisitionCost = AcquisitionCostResult | 'loading' | 'error';
 
 function DescModal({ detail, feature }: { detail: CachedDetail | undefined; feature: string }) {
   return (
@@ -215,12 +221,80 @@ function RealtorModal({ detail, brokerageName }: { detail: CachedDetail | undefi
   );
 }
 
+// ─── 단지 정보 모달 ───────────────────────────────────────────────────────────
+function ComplexInfoModal({ detail }: { detail: CachedComplexDetail | undefined }) {
+  const fmtDate = (d: string) =>
+    d && d.length >= 8 ? `${d.slice(0, 4)}.${d.slice(4, 6)}.${d.slice(6, 8)}` : (d || '-');
+
+  return (
+    <div className="detail-modal-content">
+      <h3 className="detail-modal-title">단지 정보</h3>
+      {(!detail || detail === 'loading') && <span className="detail-modal-loading">불러오는 중…</span>}
+      {detail === 'error' && <span className="detail-modal-error">정보를 불러올 수 없습니다.</span>}
+      {detail && detail !== 'loading' && detail !== 'error' && (
+        <table className="realtor-info-table">
+          <tbody>
+            <tr><th>입주일</th><td>{fmtDate(detail.aptUseApproveYmd)}</td></tr>
+            <tr><th>세대수</th><td>
+              {detail.aptHouseholdCount > 0 ? `${detail.aptHouseholdCount.toLocaleString()}세대` : '-'}
+              {detail.totalDongCount > 0 && ` (${detail.totalDongCount}개동`}
+              {detail.complexHighestFloor > 0 && `, ${detail.complexHighestFloor}F`}
+              {detail.totalDongCount > 0 && ')'}
+            </td></tr>
+            <tr><th>세대당 주차</th><td>
+              {detail.aptParkingCountPerHousehold > 0 ? `${detail.aptParkingCountPerHousehold}대` : '-'}
+            </td></tr>
+            <tr><th>시공사</th><td>{detail.aptConstructionCompanyName || '-'}</td></tr>
+            <tr><th>구조</th><td>{detail.entranceTypeName || '-'}</td></tr>
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+// ─── 매입비용 모달 ────────────────────────────────────────────────────────────
+function AcquisitionCostModal({ detail, buyPrice }: { detail: CachedAcquisitionCost | undefined; buyPrice: number }) {
+  const [includeFees, setIncludeFees] = React.useState(false);
+  const fmtWon = (v: number) => v > 0 ? `${v.toLocaleString()}원` : '-';
+  const adjTotal = detail && detail !== 'loading' && detail !== 'error'
+    ? buyPrice + detail.totalPrice : 0;
+
+  return (
+    <div className="detail-modal-content">
+      <h3 className="detail-modal-title">매입비용</h3>
+      <label className="acq-include-toggle">
+        <input type="checkbox" checked={includeFees} onChange={(e) => setIncludeFees(e.target.checked)} />
+        매입비용을 매수비용에 포함
+        {includeFees && adjTotal > 0 && (
+          <span className="acq-total-incl"> → {adjTotal.toLocaleString()}원</span>
+        )}
+      </label>
+      {(!detail || detail === 'loading') && <span className="detail-modal-loading">불러오는 중…</span>}
+      {detail === 'error' && <span className="detail-modal-error">비용을 계산할 수 없습니다.</span>}
+      {detail && detail !== 'loading' && detail !== 'error' && (
+        <table className="realtor-info-table acq-table">
+          <tbody>
+            <tr><th>취득세</th><td>{fmtWon(detail.acquisitionTax)}</td></tr>
+            <tr><th>교육세</th><td>{fmtWon(detail.eduTax)}</td></tr>
+            <tr><th>농어촌특별세</th><td>{fmtWon(detail.specialTax)}</td></tr>
+            <tr className="acq-total-row"><th>매입비용 총액</th><td>{fmtWon(detail.totalPrice)}</td></tr>
+            <tr><th>중개보수</th><td>{fmtWon(detail.brokerFee)}</td></tr>
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 interface ModalState {
-  kind: 'desc' | 'realtor';
+  kind: 'desc' | 'realtor' | 'complex-info' | 'acquisition-cost';
   articleNo: string;
   articleFeature: string;
   brokerageName: string;
+  complexNo?: number;   // complex-info
+  buyPrice?: number;    // acquisition-cost: 원 단위
 }
 
 export function ResultTable({ searchKey, properties, realEstateType, areaUnit, priceUnit, meta, userId, onStatsChange }: ResultTableProps) {
@@ -239,7 +313,9 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
   const [selectedRow, setSelectedRow]       = useState<string | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [modalState, setModalState]         = useState<ModalState | null>(null);
-  const [detailCache, setDetailCache]       = useState<Map<string, CachedDetail>>(new Map());
+  const [detailCache, setDetailCache]             = useState<Map<string, CachedDetail>>(new Map());
+  const [complexInfoCache, setComplexInfoCache]   = useState<Map<number, CachedComplexDetail>>(new Map());
+  const [acquisitionCostCache, setAcquisitionCostCache] = useState<Map<string, CachedAcquisitionCost>>(new Map());
   const [colWidths, setColWidths]           = useState<Record<string, number>>(() => loadColWidths(userId));
   const [isDupHidden, setIsDupHidden]       = useState(true);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -260,9 +336,17 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
     setModalState(null);
     detailCacheRef.current = new Map();
     setDetailCache(new Map());
+    complexInfoCacheRef.current = new Map();
+    setComplexInfoCache(new Map());
+    acquisitionCostCacheRef.current = new Map();
+    setAcquisitionCostCache(new Map());
   }, [searchKey]);
 
   const priceUnitLabel = priceUnit === 'thousand' ? '천원' : '만원';
+
+  // ── Detail / ComplexInfo / AcquisitionCost cache refs (persist across renders) ──
+  const complexInfoCacheRef      = useRef<Map<number, CachedComplexDetail>>(new Map());
+  const acquisitionCostCacheRef  = useRef<Map<string, CachedAcquisitionCost>>(new Map());
 
   // ── Detail cache (lazy fetch) ──
   const detailCacheRef = useRef<Map<string, CachedDetail>>(new Map());
@@ -282,10 +366,38 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
       });
   }, []);
 
+  const ensureComplexDetail = useCallback((complexNo: number) => {
+    if (complexInfoCacheRef.current.has(complexNo)) return;
+    complexInfoCacheRef.current.set(complexNo, 'loading');
+    setComplexInfoCache(new Map(complexInfoCacheRef.current));
+    void getComplexDetail(complexNo)
+      .then((r) => { complexInfoCacheRef.current.set(complexNo, r ?? 'error'); setComplexInfoCache(new Map(complexInfoCacheRef.current)); })
+      .catch(() => { complexInfoCacheRef.current.set(complexNo, 'error'); setComplexInfoCache(new Map(complexInfoCacheRef.current)); });
+  }, []);
+
+  const ensureAcquisitionCost = useCallback((articleNo: string, complexNo: number, priceWon: number) => {
+    if (acquisitionCostCacheRef.current.has(articleNo)) return;
+    acquisitionCostCacheRef.current.set(articleNo, 'loading');
+    setAcquisitionCostCache(new Map(acquisitionCostCacheRef.current));
+    void getAcquisitionCost(articleNo, complexNo, priceWon)
+      .then((r) => { acquisitionCostCacheRef.current.set(articleNo, r ?? 'error'); setAcquisitionCostCache(new Map(acquisitionCostCacheRef.current)); })
+      .catch(() => { acquisitionCostCacheRef.current.set(articleNo, 'error'); setAcquisitionCostCache(new Map(acquisitionCostCacheRef.current)); });
+  }, []);
+
   const openModal = useCallback((kind: 'desc' | 'realtor', p: Property) => {
     setModalState({ kind, articleNo: p.articleNumber, articleFeature: p.articleFeature, brokerageName: p.brokerageName });
     ensureDetail(p);
   }, [ensureDetail]);
+
+  const openComplexModal = useCallback((p: Property) => {
+    setModalState({ kind: 'complex-info', articleNo: p.articleNumber, articleFeature: '', brokerageName: '', complexNo: p.complexNumber });
+    if (p.complexNumber > 0) ensureComplexDetail(p.complexNumber);
+  }, [ensureComplexDetail]);
+
+  const openAcquisitionModal = useCallback((p: Property, priceWon: number) => {
+    setModalState({ kind: 'acquisition-cost', articleNo: p.articleNumber, articleFeature: '', brokerageName: '', complexNo: p.complexNumber, buyPrice: priceWon });
+    ensureAcquisitionCost(p.articleNumber, p.complexNumber, priceWon);
+  }, [ensureAcquisitionCost]);
 
   // ── Column resize ──
   const colWidthsRef = useRef(colWidths);
@@ -523,6 +635,17 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
   }, [tableStats, onStatsChange]);
 
   const hasActiveFilter = !!(complexFilter || tradeTypeFilter || filterText || spaceMin > 0 || spaceMax > 0);
+
+  // 현재 페이지에서 각 단지의 첫 번째 매물 → 단지 정보 버튼 표시 대상
+  const firstComplexInPage = useMemo(() => {
+    const seen = new Set<number | string>();
+    const result = new Set<string>(); // articleNumber 기준
+    for (const p of paginated) {
+      const key = p.complexNumber > 0 ? p.complexNumber : p.complexName;
+      if (!seen.has(key)) { seen.add(key); result.add(p.articleNumber); }
+    }
+    return result;
+  }, [paginated]);
   const areaCols = useMemo(() => buildAreaCols(areaUnit, useContract), [areaUnit, useContract]);
 
   // ── Active column keys for colgroup ──
@@ -767,6 +890,13 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
                         {isExpandable && (
                           <span className="group-expand-icon">{isExpanded ? '▾' : '▸'}</span>
                         )}
+                        {firstComplexInPage.has(p.articleNumber) && p.complexNumber > 0 && (
+                          <button
+                            className="detail-plus-btn complex-info-btn"
+                            title="단지 정보"
+                            onClick={(e) => { e.stopPropagation(); openComplexModal(p); }}
+                          >+</button>
+                        )}
                       </div>
                     </td>
                     <td>{p.dongName || '-'}</td>
@@ -784,6 +914,11 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
                             <>
                               <span className="price-value">{formatPriceByUnit(p.dealPrice, priceUnit)}</span>
                               <PriceCell p={p} showPriceUp={true} />
+                              <button
+                                className="detail-plus-btn"
+                                title="매입비용 계산"
+                                onClick={(e) => { e.stopPropagation(); openAcquisitionModal(p, p.dealPrice); }}
+                              >+</button>
                             </>
                           ) : <span className="td-empty">-</span>}
                         </div>
@@ -821,7 +956,18 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
                     )}
                     {isPresale && (
                       <td className="td-price presale-col presale-total">
-                        {totalBuy > 0 ? formatPriceByUnit(totalBuy, priceUnit) : '-'}
+                        <div className="td-price-inner">
+                          {totalBuy > 0 ? (
+                            <>
+                              <span className="price-value">{formatPriceByUnit(totalBuy, priceUnit)}</span>
+                              <button
+                                className="detail-plus-btn"
+                                title="매입비용 계산"
+                                onClick={(e) => { e.stopPropagation(); openAcquisitionModal(p, totalBuy); }}
+                              >+</button>
+                            </>
+                          ) : <span className="td-empty">-</span>}
+                        </div>
                       </td>
                     )}
                     {isPresale && (
@@ -901,7 +1047,7 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
         </div>
       )}
 
-      {/* Detail / Realtor modal */}
+      {/* Detail / Realtor / ComplexInfo / AcquisitionCost modal */}
       {modalState && (
         <div className="modal-overlay" onClick={() => setModalState(null)}>
           <div className="modal-card detail-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -916,6 +1062,17 @@ export function ResultTable({ searchKey, properties, realEstateType, areaUnit, p
               <RealtorModal
                 detail={detailCache.get(modalState.articleNo)}
                 brokerageName={modalState.brokerageName}
+              />
+            )}
+            {modalState.kind === 'complex-info' && (
+              <ComplexInfoModal
+                detail={modalState.complexNo ? complexInfoCache.get(modalState.complexNo) : undefined}
+              />
+            )}
+            {modalState.kind === 'acquisition-cost' && (
+              <AcquisitionCostModal
+                detail={acquisitionCostCache.get(modalState.articleNo)}
+                buyPrice={modalState.buyPrice ?? 0}
               />
             )}
           </div>

@@ -2374,6 +2374,47 @@ thead .col-resize-handle:active {
   border-bottom: none;
 }
 
+/* ── 단지 정보 + 버튼 (단지명 셀) ── */
+.complex-info-btn {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.result-table tbody tr:hover .complex-info-btn,
+.result-table tbody tr.row-selected .complex-info-btn {
+  opacity: 1;
+}
+
+/* ── 매입비용 모달 ── */
+.acq-include-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-2);
+  padding: 10px 0 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.acq-include-toggle input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--blue);
+}
+.acq-total-incl {
+  color: var(--price-accent);
+  font-weight: 700;
+  margin-left: 4px;
+}
+.acq-table .acq-total-row th,
+.acq-table .acq-total-row td {
+  border-top: 1px solid var(--border);
+  font-weight: 700;
+  color: var(--price-accent);
+}
+
 .table-empty {
   text-align: center;
   padding: 48px 20px;

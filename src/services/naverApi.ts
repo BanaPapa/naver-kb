@@ -523,6 +523,76 @@ export interface ArticleDetailResult {
   rentCount: number;
 }
 
+// ====================================================
+// 단지 상세 정보 (fin.land /complex/detail)
+// ====================================================
+
+export interface ComplexDetailResult {
+  aptUseApproveYmd: string;              // 입주일 (YYYYMMDD)
+  aptHouseholdCount: number;             // 세대수
+  totalDongCount: number;                // 동수
+  complexHighestFloor: number;           // 최고층
+  aptParkingCountPerHousehold: number;   // 세대당 주차대수
+  aptConstructionCompanyName: string;    // 시공사
+  entranceTypeName: string;              // 구조(현관방식)
+}
+
+export async function getComplexDetail(complexNo: number): Promise<ComplexDetailResult | null> {
+  try {
+    const data = await naverFetch('/complex/detail', { complexNumber: complexNo }) as Record<string, unknown>;
+    const r = (data.result ?? {}) as Record<string, unknown>;
+    return {
+      aptUseApproveYmd:            String(r.aptUseApproveYmd            ?? ''),
+      aptHouseholdCount:           Number(r.aptHouseholdCount           ?? 0),
+      totalDongCount:              Number(r.totalDongCount              ?? 0),
+      complexHighestFloor:         Number(r.complexHighestFloor         ?? 0),
+      aptParkingCountPerHousehold: Number(r.aptParkingCountPerHousehold ?? 0),
+      aptConstructionCompanyName:  String(r.aptConstructionCompanyName  ?? ''),
+      entranceTypeName:            String(r.entranceTypeName            ?? ''),
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ====================================================
+// 매입비용 조회 (fin.land /complex/article/acquisition-cost)
+// ====================================================
+
+export interface AcquisitionCostResult {
+  acquisitionTax: number;   // 취득세 (원)
+  eduTax: number;           // 교육세 (원)
+  specialTax: number;       // 농어촌특별세 (원)
+  totalPrice: number;       // 매입비용 총액 (원)
+  brokerFee: number;        // 중개보수 (원)
+}
+
+export async function getAcquisitionCost(
+  articleNo: string,
+  complexNo: number,
+  dealPriceWon: number,      // 원 단위 — API 호출 시 만원으로 변환
+): Promise<AcquisitionCostResult | null> {
+  try {
+    const data = await naverFetch('/complex/article/acquisition-cost', {
+      articleNumber: articleNo,
+      complexNumber: complexNo,
+      dealPrice: Math.round(dealPriceWon / 10_000),  // 만원 단위
+    }) as Record<string, unknown>;
+    const r = (data.result ?? {}) as Record<string, unknown>;
+    // API가 원 단위로 반환
+    const toNum = (v: unknown) => Number(v ?? 0);
+    return {
+      acquisitionTax: toNum(r.acquisitionTax),
+      eduTax:         toNum(r.eduTax),
+      specialTax:     toNum(r.specialTax),
+      totalPrice:     toNum(r.totalPrice),
+      brokerFee:      toNum(r.brokerFee),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function getArticleDetail(
   articleNo: string,
   complexNo?: number,
