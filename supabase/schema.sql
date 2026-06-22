@@ -15,15 +15,17 @@ create table if not exists public.profiles (
   role        text not null default 'user'    check (role   in ('user', 'admin')),
   name        text,
   company     text,
+  position    text,
   phone       text,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
 
 -- 기존 테이블에 컬럼 추가 (이미 생성된 경우 — 마이그레이션용)
-alter table public.profiles add column if not exists name    text;
-alter table public.profiles add column if not exists company text;
-alter table public.profiles add column if not exists phone   text;
+alter table public.profiles add column if not exists name     text;
+alter table public.profiles add column if not exists company  text;
+alter table public.profiles add column if not exists position text;
+alter table public.profiles add column if not exists phone    text;
 
 -- 신규 auth.users 생성 시 프로필 자동 생성.
 -- 첫 사용자(=프로필 0건)는 admin+approved 로 부트스트랩, 이후는 user+pending.
@@ -33,7 +35,7 @@ declare
   is_first boolean;
 begin
   select count(*) = 0 into is_first from public.profiles;
-  insert into public.profiles (id, email, role, status, name, company, phone)
+  insert into public.profiles (id, email, role, status, name, company, position, phone)
   values (
     new.id,
     new.email,
@@ -41,6 +43,7 @@ begin
     case when is_first then 'approved' else 'pending' end,
     new.raw_user_meta_data->>'name',
     new.raw_user_meta_data->>'company',
+    new.raw_user_meta_data->>'position',
     new.raw_user_meta_data->>'phone'
   )
   on conflict (id) do nothing;

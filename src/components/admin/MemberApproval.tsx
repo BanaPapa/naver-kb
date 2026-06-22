@@ -51,7 +51,7 @@ export function MemberApproval() {
   );
 
   const changeInfo = useCallback(
-    async (id: string, fields: { name?: string; company?: string; phone?: string }) => {
+    async (id: string, fields: { name?: string; company?: string; position?: string; phone?: string }) => {
       setProfiles((prev) =>
         prev.map((p) => (p.id === id ? { ...p, ...fields } : p)),
       );
@@ -174,7 +174,7 @@ interface MemberTableProps {
   rows: Profile[];
   busyId: string | null;
   onStatusChange: (id: string, status: ProfileStatus) => void;
-  onInfoChange: (id: string, fields: { name?: string; company?: string; phone?: string }) => void;
+  onInfoChange: (id: string, fields: { name?: string; company?: string; position?: string; phone?: string }) => void;
 }
 
 function MemberTable({ rows, busyId, onStatusChange, onInfoChange }: MemberTableProps) {
@@ -184,6 +184,7 @@ function MemberTable({ rows, busyId, onStatusChange, onInfoChange }: MemberTable
         <span>이메일</span>
         <span>이름</span>
         <span>회사/소속</span>
+        <span>직급</span>
         <span>전화번호</span>
         <span>권한</span>
         <span>상태</span>
@@ -210,6 +211,14 @@ function MemberTable({ rows, busyId, onStatusChange, onInfoChange }: MemberTable
                 value={p.company}
                 placeholder="소속 없음"
                 onSave={(v) => onInfoChange(p.id, { company: v })}
+              />
+            </span>
+
+            <span>
+              <EditableCell
+                value={p.position}
+                placeholder="직급 없음"
+                onSave={(v) => onInfoChange(p.id, { position: v })}
               />
             </span>
 

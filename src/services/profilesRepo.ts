@@ -11,6 +11,7 @@ export interface Profile {
   role: ProfileRole;
   name: string | null;
   company: string | null;
+  position: string | null;
   phone: string | null;
   createdAt: string;
 }
@@ -22,11 +23,12 @@ interface ProfileRow {
   role: ProfileRole;
   name: string | null;
   company: string | null;
+  position: string | null;
   phone: string | null;
   created_at: string;
 }
 
-const COLS = 'id, email, status, role, name, company, phone, created_at';
+const COLS = 'id, email, status, role, name, company, position, phone, created_at';
 
 function toProfile(r: ProfileRow): Profile {
   return {
@@ -36,6 +38,7 @@ function toProfile(r: ProfileRow): Profile {
     role: r.role,
     name: r.name,
     company: r.company,
+    position: r.position,
     phone: r.phone,
     createdAt: r.created_at,
   };
@@ -78,7 +81,7 @@ export async function setProfileStatus(id: string, status: ProfileStatus): Promi
 // 회원 정보 수정 (관리자 전용 — RLS 가 강제).
 export async function updateProfileInfo(
   id: string,
-  fields: { name?: string; company?: string; phone?: string },
+  fields: { name?: string; company?: string; position?: string; phone?: string },
 ): Promise<void> {
   if (!supabase) return;
   const { error } = await supabase.from('profiles').update(fields).eq('id', id);

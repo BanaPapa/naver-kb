@@ -3757,7 +3757,7 @@ thead .col-resize-handle:active {
 
 /* ── 회원 테이블 와이드 레이아웃 (이름·회사·전화 컬럼 추가) ── */
 .member-table-wide .member-row {
-  grid-template-columns: minmax(140px, 1.6fr) 100px minmax(100px, 1fr) 120px 72px 84px 90px 130px;
+  grid-template-columns: minmax(130px, 1.5fr) 92px minmax(96px, 1fr) 84px 116px 68px 80px 86px 124px;
 }
 
 /* ── 인라인 편집 셀 ── */

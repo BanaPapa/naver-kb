@@ -5,7 +5,7 @@ interface LoginScreenProps {
   onSignUp: (
     email: string,
     password: string,
-    meta: { name: string; company: string; phone: string },
+    meta: { name: string; company: string; position: string; phone: string },
   ) => Promise<{ needsEmailConfirm: boolean }>;
   onForgotPassword: (email: string) => Promise<void>;
 }
@@ -32,9 +32,10 @@ export function LoginScreen({ onSignIn, onSignUp, onForgotPassword }: LoginScree
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(Boolean(remembered));
   // 회원가입 전용 추가 필드
-  const [name, setName]       = useState('');
-  const [company, setCompany] = useState('');
-  const [phone, setPhone]     = useState('');
+  const [name, setName]         = useState('');
+  const [company, setCompany]   = useState('');
+  const [position, setPosition] = useState('');
+  const [phone, setPhone]       = useState('');
 
   const [busy, setBusy]     = useState(false);
   const [error, setError]   = useState<string | null>(null);
@@ -88,6 +89,10 @@ export function LoginScreen({ onSignIn, onSignUp, onForgotPassword }: LoginScree
         setError('회사/소속을 입력해주세요.');
         return;
       }
+      if (!position.trim()) {
+        setError('직급을 입력해주세요.');
+        return;
+      }
     }
 
     setBusy(true);
@@ -99,6 +104,7 @@ export function LoginScreen({ onSignIn, onSignUp, onForgotPassword }: LoginScree
         const { needsEmailConfirm } = await onSignUp(email.trim(), password, {
           name: name.trim(),
           company: company.trim(),
+          position: position.trim(),
           phone: phone.trim(),
         });
         if (needsEmailConfirm) {
@@ -191,6 +197,18 @@ export function LoginScreen({ onSignIn, onSignUp, onForgotPassword }: LoginScree
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="(주)에스테이트"
+                disabled={busy}
+              />
+            </label>
+
+            <label className="auth-field">
+              <span>직급 <span className="auth-required">*</span></span>
+              <input
+                type="text"
+                autoComplete="organization-title"
+                value={position}
+                onChange={(e) => setPosition(e.target.value)}
+                placeholder="대리 / 과장 / 팀장 등"
                 disabled={busy}
               />
             </label>

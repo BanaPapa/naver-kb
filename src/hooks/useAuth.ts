@@ -91,13 +91,15 @@ export function useAuth() {
   const signUp = useCallback(async (
     email: string,
     password: string,
-    meta?: { name: string; company: string; phone: string },
+    meta?: { name: string; company: string; position: string; phone: string },
   ) => {
     if (!supabase) throw new Error('Supabase가 설정되지 않았습니다.');
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: meta ? { data: { name: meta.name, company: meta.company, phone: meta.phone } } : undefined,
+      options: meta
+        ? { data: { name: meta.name, company: meta.company, position: meta.position, phone: meta.phone } }
+        : undefined,
     });
     if (error) throw error;
     // 이메일 확인이 켜져 있으면 session=null (확인 메일 발송됨)
