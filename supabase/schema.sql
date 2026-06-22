@@ -219,6 +219,30 @@ create policy "inquiries_update_visible" on public.inquiries
   for update using (user_id = auth.uid() or public.is_admin())
               with check (user_id = auth.uid() or public.is_admin());
 
+-- 컬럼 가드: RLS 는 컬럼 단위 제한이 불가하므로, 비관리자가 본인 스레드 행이라도
+-- body/sender_role/context/user_id/read_by_admin 를 위조·변경하지 못하도록 트리거로 강제한다.
+-- (비관리자는 read_by_user 읽음표시만 허용. 가짜 관리자 답변 생성/원본 답변 변조 방지)
+create or replace function public.guard_inquiry_update()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then
+    if new.sender_role  is distinct from old.sender_role
+       or new.body      is distinct from old.body
+       or new.user_id   is distinct from old.user_id
+       or new.context   is distinct from old.context
+       or new.read_by_admin is distinct from old.read_by_admin then
+      raise exception '문의 메시지의 본문/발신자 정보는 수정할 수 없습니다.';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_inquiries_guard on public.inquiries;
+create trigger trg_inquiries_guard
+  before update on public.inquiries
+  for each row execute function public.guard_inquiry_update();
+
 -- Realtime 발행 (이미 추가돼 있으면 에러 무시)
 do $$
 begin

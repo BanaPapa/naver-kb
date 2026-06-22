@@ -99,7 +99,7 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus, isAdmin,
     } else if (!isStable) {
       setNaverCrawlToken(null);
     }
-  }, [agentRunStatus, session]);
+  }, [agentRunStatus, session, isAdmin]);
 
   const handleInstallConsent = () => {
     setInstallDone(true);
@@ -166,7 +166,9 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus, isAdmin,
   }, [state.status]);
 
   // 검색 활동 로깅 — 시작 시 요약 행 생성, 종료 시 상태 갱신 (실패는 검색을 막지 않음)
-  const searchLogIdRef = useRef<string | null>(null);
+  // 시작 insert Promise 를 보관했다가, 종료 시 그 id 가 확정된 뒤 갱신한다
+  // (검색이 insert 왕복보다 빨리 실패해도 'running' 행이 영구히 남지 않도록).
+  const searchLogPromiseRef = useRef<Promise<string | null> | null>(null);
   const prevStatusRef = useRef<typeof state.status>('idle');
   useEffect(() => {
     const prev = prevStatusRef.current;
@@ -175,16 +177,14 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus, isAdmin,
     if (prev === cur) return;
 
     if (cur === 'running' && prev !== 'running') {
-      searchLogIdRef.current = null;
-      startSearchLog(state.meta).then((id) => {
-        searchLogIdRef.current = id;
-      });
+      searchLogPromiseRef.current = startSearchLog(state.meta);
     } else if ((cur === 'done' || cur === 'error' || cur === 'stopped') && prev === 'running') {
-      finishSearchLog(searchLogIdRef.current, {
+      const patch = {
         status: cur,
         resultCount: state.properties.length,
         errorMessage: cur === 'error' ? state.errorMessage ?? undefined : undefined,
-      });
+      };
+      Promise.resolve(searchLogPromiseRef.current).then((id) => finishSearchLog(id, patch));
     }
   }, [state.status, state.meta, state.properties.length, state.errorMessage]);
 

@@ -52,7 +52,9 @@ export function MemberDetailModal({ member, onClose, onThreadRead }: MemberDetai
   useEffect(() => {
     if (tab !== 'inquiry') return;
     let alive = true;
-    listThread(member.id).then((rows) => { if (alive) setThread(rows); }).catch(() => {});
+    listThread(member.id)
+      .then((rows) => { if (alive) setThread(rows); })
+      .catch((err) => console.warn('문의 스레드 로드 실패:', err));
     markThreadReadByAdmin(member.id).then(() => onThreadRead?.());
     return () => { alive = false; };
   }, [tab, member.id, onThreadRead]);
