@@ -13,18 +13,21 @@ import { CrawlerConfig, SavedSlot } from '../types';
 import { AreaUnit, PriceUnit } from '../services/api';
 import { setNaverBases, setNaverCrawlToken } from '../services/naverApi';
 import { fetchCrawlToken } from '../services/agentApi';
+import { startSearchLog, finishSearchLog } from '../services/searchLogsRepo';
 
 interface NaverCrawlerTabProps {
   crawler: ReturnType<typeof useCrawler>;
   slots: ReturnType<typeof useSlots>;
   session: Session | null;
   agentStatus: AgentStatusHook;
+  isAdmin: boolean;
+  onRequestInquiry: (prefill?: Record<string, unknown> | null) => void;
 }
 
 const AGENT_DOWNLOAD_URL =
   'https://github.com/BanaPapa/Estate-OS/releases/latest/download/Estate-OS-Agent-Setup.exe';
 
-export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverCrawlerTabProps) {
+export function NaverCrawlerTab({ crawler, slots, session, agentStatus, isAdmin, onRequestInquiry }: NaverCrawlerTabProps) {
   const { state, start, stop, skipDong, reset, clearLogs, load } = crawler;
   const [searchKey, setSearchKey] = useState(0);
   const [areaUnit, setAreaUnit] = useState<AreaUnit>('sqm');
@@ -36,6 +39,7 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
   const [notice, setNotice] = useState<string | null>(null);
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [installDone, setInstallDone] = useState(false);
+  const [failure, setFailure] = useState<{ message: string; context: Record<string, unknown> } | null>(null);
   const {
     status: agentRunStatus,
     cookieReady,
@@ -86,12 +90,16 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
         .then((token: string) => setNaverCrawlToken(token))
         .catch((err: unknown) => {
           const msg = err instanceof Error ? err.message : String(err);
-          setNotice(`크롤 토큰 발급 실패: ${msg}`);
+          if (isAdmin) {
+            setNotice(`크롤 토큰 발급 실패: ${msg}`);
+          } else {
+            setFailure({ message: '데이터 수집 준비 중 문제가 발생했습니다.', context: { kind: 'crawl-token', error: msg } });
+          }
         });
     } else if (!isStable) {
       setNaverCrawlToken(null);
     }
-  }, [agentRunStatus, session]);
+  }, [agentRunStatus, session, isAdmin]);
 
   const handleInstallConsent = () => {
     setInstallDone(true);
@@ -156,6 +164,46 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
   useEffect(() => {
     if (state.status === 'error') setCrawlModalOpen(false);
   }, [state.status]);
+
+  // 검색 활동 로깅 — 시작 시 요약 행 생성, 종료 시 상태 갱신 (실패는 검색을 막지 않음)
+  // 시작 insert Promise 를 보관했다가, 종료 시 그 id 가 확정된 뒤 갱신한다
+  // (검색이 insert 왕복보다 빨리 실패해도 'running' 행이 영구히 남지 않도록).
+  const searchLogPromiseRef = useRef<Promise<string | null> | null>(null);
+  const prevStatusRef = useRef<typeof state.status>('idle');
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    const cur = state.status;
+    prevStatusRef.current = cur;
+    if (prev === cur) return;
+
+    if (cur === 'running' && prev !== 'running') {
+      searchLogPromiseRef.current = startSearchLog(state.meta);
+    } else if ((cur === 'done' || cur === 'error' || cur === 'stopped') && prev === 'running') {
+      const patch = {
+        status: cur,
+        resultCount: state.properties.length,
+        errorMessage: cur === 'error' ? state.errorMessage ?? undefined : undefined,
+      };
+      Promise.resolve(searchLogPromiseRef.current).then((id) => finishSearchLog(id, patch));
+    }
+  }, [state.status, state.meta, state.properties.length, state.errorMessage]);
+
+  // 비관리자: 백그라운드 검색 실패 시 문의 유도 모달
+  useEffect(() => {
+    if (isAdmin) return;
+    if (state.status === 'error') {
+      const err = state.errorMessage ?? '알 수 없는 오류';
+      setFailure({
+        message: '검색 중 문제가 발생했습니다. 관리자에게 문의해 주세요.',
+        context: {
+          kind: 'search-error',
+          error: err,
+          region: [state.meta.largeName, state.meta.midName, state.meta.smallName].filter(Boolean).join(' '),
+          product: state.meta.realEstateType,
+        },
+      });
+    }
+  }, [state.status, state.errorMessage, state.meta, isAdmin]);
 
   const handleStart = (config: CrawlerConfig) => {
     setSearchKey((k) => k + 1);
@@ -552,6 +600,7 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
           logs={state.logs}
           status={state.status}
           regionName={state.regionName}
+          isAdmin={isAdmin}
           summary={state.summary}
           propertyCount={state.properties.length}
           complexCount={complexCount}
@@ -578,6 +627,24 @@ export function NaverCrawlerTab({ crawler, slots, session, agentStatus }: NaverC
       )}
 
       {notice && <InfoModal message={notice} onClose={() => setNotice(null)} />}
+
+      {failure && (
+        <div className="modal-overlay" onClick={() => setFailure(null)}>
+          <div className="modal-card fail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="fail-ic">!</div>
+            <p className="fail-msg">{failure.message}</p>
+            <div className="fail-actions">
+              <button className="btn-ghost" onClick={() => setFailure(null)}>닫기</button>
+              <button
+                className="eos-run-btn"
+                onClick={() => { const ctx = failure.context; setFailure(null); onRequestInquiry(ctx); }}
+              >
+                관리자에게 문의
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

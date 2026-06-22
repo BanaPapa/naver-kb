@@ -155,9 +155,12 @@ interface SidebarProps {
   userEmail?: string | null;
   onSignOut?: () => void; // 지정 시(=Supabase 로그인 상태) 로그아웃 버튼 노출
   isAdmin?: boolean;      // 관리자면 '회원 승인' 메뉴 노출
+  onOpenInquiry?: () => void;
+  inquiryUnread?: number;
+  adminInboxUnread?: number;
 }
 
-export function Sidebar({ activeTab, onTabChange, collapsed, onToggleCollapse, userEmail, onSignOut, isAdmin }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange, collapsed, onToggleCollapse, userEmail, onSignOut, isAdmin, onOpenInquiry, inquiryUnread = 0, adminInboxUnread = 0 }: SidebarProps) {
   return (
     <aside className="eos-side">
       <button className="eos-side-toggle" title="사이드바 접기" onClick={onToggleCollapse}>
@@ -209,6 +212,7 @@ export function Sidebar({ activeTab, onTabChange, collapsed, onToggleCollapse, u
               <path d="M19 8v6M22 11h-6" />
             </svg>
             <span className="eos-nav-label">회원 승인</span>
+            {adminInboxUnread > 0 && <span className="eos-nav-badge">{adminInboxUnread}</span>}
             <span className="eos-dot live" />
           </button>
         )}
@@ -224,6 +228,16 @@ export function Sidebar({ activeTab, onTabChange, collapsed, onToggleCollapse, u
           <span className="eos-nav-label">설정</span>
         </button>
       </nav>
+
+      {onOpenInquiry && (
+        <button className="eos-nav-item eos-inquiry-btn" title="관리자에게 문의하기" onClick={onOpenInquiry}>
+          <svg className="ic" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <span className="eos-nav-label">관리자에게 문의하기</span>
+          {inquiryUnread > 0 && <span className="eos-nav-badge">{inquiryUnread}</span>}
+        </button>
+      )}
 
       <div className="eos-acct">
         <div className="eos-acct-av">{userEmail ? userEmail[0].toUpperCase() : 'NV'}</div>

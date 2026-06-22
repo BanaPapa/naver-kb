@@ -3988,3 +3988,48 @@ thead .col-resize-handle:active {
   font-size: 19px;
   height: 52px;
 }
+
+/* 회원 상세 모달 */
+.member-detail { width: min(880px, 94vw); max-height: 86vh; overflow: auto; position: relative; }
+.md-title { margin: 4px 0 2px; }
+.md-sub { color: var(--muted, #8b949e); font-size: 13px; margin: 0 0 14px; }
+.md-tabs { display: flex; gap: 6px; border-bottom: 1px solid #21262d; margin-bottom: 12px; }
+.md-tab { background: none; border: none; color: #8b949e; padding: 8px 14px; cursor: pointer; border-bottom: 2px solid transparent; }
+.md-tab.active { color: #fff; border-bottom-color: #00d4aa; }
+.md-empty { color: #8b949e; padding: 24px; text-align: center; }
+.md-log-table { display: flex; flex-direction: column; font-size: 13px; }
+.md-log-row { display: grid; grid-template-columns: 150px 1.6fr 1.4fr 60px 90px 70px 64px; gap: 8px; padding: 7px 8px; border-bottom: 1px solid #1b2027; align-items: center; }
+.md-log-head { color: #8b949e; font-weight: 600; position: sticky; top: 0; background: #0d1117; }
+.md-log-time { color: #8b949e; white-space: nowrap; }
+.md-log-status.done { color: #00d4aa; }
+.md-log-status.error { color: #f7768e; }
+.md-log-status.stopped { color: #e3b341; }
+.md-log-status.running { color: #58a6ff; }
+.member-btn.detail { background: #21262d; color: #c9d1d9; }
+
+/* 문의 모달 / 실패 모달 / 사이드바 배지 */
+.eos-nav-badge { margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #f7768e; color: #fff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.eos-inquiry-btn { margin-top: auto; }
+.inquiry-modal { width: min(560px, 94vw); max-height: 84vh; display: flex; flex-direction: column; position: relative; }
+.iq-title { margin: 2px 0 12px; }
+.iq-thread { flex: 1; overflow-y: auto; min-height: 200px; display: flex; flex-direction: column; gap: 10px; padding: 6px 2px; }
+.iq-empty { color: #8b949e; text-align: center; padding: 32px 12px; }
+.iq-msg { display: flex; flex-direction: column; max-width: 78%; }
+.iq-msg.user { align-self: flex-end; align-items: flex-end; }
+.iq-msg.admin { align-self: flex-start; align-items: flex-start; }
+.iq-bubble { padding: 9px 12px; border-radius: 12px; font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+.iq-msg.user .iq-bubble { background: #00d4aa; color: #04221c; }
+.iq-msg.admin .iq-bubble { background: #21262d; color: #e6edf3; }
+.iq-meta { font-size: 11px; color: #8b949e; margin-top: 3px; }
+.iq-context { font-size: 12px; color: #e3b341; margin: 8px 0 0; }
+.iq-input { display: flex; gap: 8px; margin-top: 10px; }
+.iq-input textarea { flex: 1; min-height: 56px; resize: vertical; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; color: #e6edf3; padding: 8px 10px; font-family: inherit; }
+.iq-send { white-space: nowrap; align-self: flex-end; }
+.fail-modal { width: min(420px, 92vw); text-align: center; padding: 26px; position: relative; }
+.fail-ic { width: 46px; height: 46px; margin: 0 auto 14px; border-radius: 50%; background: #f7768e22; color: #f7768e; font-size: 26px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.fail-msg { color: #e6edf3; margin: 0 0 18px; line-height: 1.5; }
+.fail-actions { display: flex; gap: 10px; justify-content: center; }
+
+.member-unread-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #f7768e; margin-right: 6px; vertical-align: middle; }
+.md-inquiry { display: flex; flex-direction: column; }
+.md-inquiry .iq-thread { max-height: 46vh; }

@@ -6,6 +6,7 @@ import {
   type Profile,
   type ProfileStatus,
 } from '../../services/profilesRepo';
+import { MemberDetailModal } from './MemberDetailModal';
 
 const STATUS_LABEL: Record<ProfileStatus, string> = {
   pending: '대기',
@@ -13,12 +14,18 @@ const STATUS_LABEL: Record<ProfileStatus, string> = {
   rejected: '거절됨',
 };
 
+interface MemberApprovalProps {
+  unreadUserIds: Set<string>;
+  onThreadRead: () => void;
+}
+
 // 관리자 전용 회원 승인 페이지. 대기/승인/거절 회원을 한 화면에서 관리.
-export function MemberApproval() {
+export function MemberApproval({ unreadUserIds, onThreadRead }: MemberApprovalProps) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [detailMember, setDetailMember] = useState<Profile | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -92,7 +99,7 @@ export function MemberApproval() {
         {pending.length === 0 ? (
           <div className="member-empty">대기 중인 가입 요청이 없습니다.</div>
         ) : (
-          <MemberTable rows={pending} busyId={busyId} onStatusChange={changeStatus} onInfoChange={changeInfo} />
+          <MemberTable rows={pending} busyId={busyId} onStatusChange={changeStatus} onInfoChange={changeInfo} onOpenDetail={setDetailMember} unreadUserIds={unreadUserIds} />
         )}
       </section>
 
@@ -103,9 +110,13 @@ export function MemberApproval() {
         {others.length === 0 ? (
           <div className="member-empty">아직 처리된 회원이 없습니다.</div>
         ) : (
-          <MemberTable rows={others} busyId={busyId} onStatusChange={changeStatus} onInfoChange={changeInfo} />
+          <MemberTable rows={others} busyId={busyId} onStatusChange={changeStatus} onInfoChange={changeInfo} onOpenDetail={setDetailMember} unreadUserIds={unreadUserIds} />
         )}
       </section>
+
+      {detailMember && (
+        <MemberDetailModal member={detailMember} onClose={() => setDetailMember(null)} onThreadRead={onThreadRead} />
+      )}
     </main>
   );
 }
@@ -162,7 +173,7 @@ function EditableCell({ value, placeholder = '—', onSave }: EditableCellProps)
     <span
       className="member-editable"
       title="더블클릭하여 수정"
-      onDoubleClick={startEdit}
+      onDoubleClick={(e) => { e.stopPropagation(); startEdit(); }}
     >
       {value || <span className="member-empty-val">{placeholder}</span>}
     </span>
@@ -175,9 +186,11 @@ interface MemberTableProps {
   busyId: string | null;
   onStatusChange: (id: string, status: ProfileStatus) => void;
   onInfoChange: (id: string, fields: { name?: string; company?: string; position?: string; phone?: string }) => void;
+  onOpenDetail: (member: Profile) => void;
+  unreadUserIds: Set<string>;
 }
 
-function MemberTable({ rows, busyId, onStatusChange, onInfoChange }: MemberTableProps) {
+function MemberTable({ rows, busyId, onStatusChange, onInfoChange, onOpenDetail, unreadUserIds }: MemberTableProps) {
   return (
     <div className="member-table member-table-wide">
       <div className="member-row member-row-head">
@@ -195,8 +208,11 @@ function MemberTable({ rows, busyId, onStatusChange, onInfoChange }: MemberTable
         const busy    = busyId === p.id;
         const isAdmin = p.role === 'admin';
         return (
-          <div className="member-row" key={p.id}>
-            <span className="member-email">{p.email ?? '(이메일 없음)'}</span>
+          <div className="member-row" key={p.id} onDoubleClick={() => onOpenDetail(p)}>
+            <span className="member-email">
+              {unreadUserIds.has(p.id) && <span className="member-unread-dot" title="새 문의" />}
+              {p.email ?? '(이메일 없음)'}
+            </span>
 
             <span>
               <EditableCell
@@ -241,6 +257,7 @@ function MemberTable({ rows, busyId, onStatusChange, onInfoChange }: MemberTable
             <span className="member-date">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
 
             <span className="member-actions">
+              <button className="member-btn detail" onClick={() => onOpenDetail(p)} title="상세 보기">상세</button>
               {isAdmin ? (
                 <span className="member-self">—</span>
               ) : (
