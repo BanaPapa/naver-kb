@@ -249,7 +249,10 @@ function ComplexInfoModal({ detail }: { detail: CachedComplexDetail | undefined 
               {detail.aptParkingCountPerHousehold > 0 ? `${detail.aptParkingCountPerHousehold}대` : '-'}
             </td></tr>
             <tr><th>시공사</th><td>{detail.aptConstructionCompanyName || '-'}</td></tr>
-            <tr><th>구조</th><td>{detail.entranceTypeName || '-'}</td></tr>
+            <tr><th>용적률/건폐율</th><td>
+              {detail.floorAreaRatio > 0 ? `${detail.floorAreaRatio}%` : '-'}
+              {detail.buildingCoverageRatio > 0 && ` / ${detail.buildingCoverageRatio}%`}
+            </td></tr>
           </tbody>
         </table>
       )}

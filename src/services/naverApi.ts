@@ -524,7 +524,10 @@ export interface ArticleDetailResult {
 }
 
 // ====================================================
-// 단지 상세 정보 (fin.land /complex/detail)
+// 단지 상세 정보 (fin.land /complex)
+// 주의: 과거 /complex/detail 경로는 404. 현재 fin.land 단지정보는 /complex.
+// 응답 필드명도 다르다(useApprovalDate, totalHouseholdNumber 등).
+// 구조(현관방식)는 더 이상 제공되지 않아 용적률/건폐율로 대체한다.
 // ====================================================
 
 export interface ComplexDetailResult {
@@ -534,21 +537,25 @@ export interface ComplexDetailResult {
   complexHighestFloor: number;           // 최고층
   aptParkingCountPerHousehold: number;   // 세대당 주차대수
   aptConstructionCompanyName: string;    // 시공사
-  entranceTypeName: string;              // 구조(현관방식)
+  floorAreaRatio: number;                // 용적률 (%)
+  buildingCoverageRatio: number;         // 건폐율 (%)
 }
 
 export async function getComplexDetail(complexNo: number): Promise<ComplexDetailResult | null> {
   try {
-    const data = await naverFetch('/complex/detail', { complexNumber: complexNo }) as Record<string, unknown>;
+    const data = await naverFetch('/complex', { complexNumber: complexNo }) as Record<string, unknown>;
     const r = (data.result ?? {}) as Record<string, unknown>;
+    const parking = (r.parkingInfo      ?? {}) as Record<string, unknown>;
+    const ratio   = (r.buildingRatioInfo ?? {}) as Record<string, unknown>;
     return {
-      aptUseApproveYmd:            String(r.aptUseApproveYmd            ?? ''),
-      aptHouseholdCount:           Number(r.aptHouseholdCount           ?? 0),
-      totalDongCount:              Number(r.totalDongCount              ?? 0),
-      complexHighestFloor:         Number(r.complexHighestFloor         ?? 0),
-      aptParkingCountPerHousehold: Number(r.aptParkingCountPerHousehold ?? 0),
-      aptConstructionCompanyName:  String(r.aptConstructionCompanyName  ?? ''),
-      entranceTypeName:            String(r.entranceTypeName            ?? ''),
+      aptUseApproveYmd:            String(r.useApprovalDate              ?? ''),
+      aptHouseholdCount:           Number(r.totalHouseholdNumber         ?? 0),
+      totalDongCount:              Number(r.dongCount                    ?? 0),
+      complexHighestFloor:         Number(r.highestDongFloor             ?? 0),
+      aptParkingCountPerHousehold: Number(parking.parkingCountPerHousehold ?? 0),
+      aptConstructionCompanyName:  String(r.constructionCompany          ?? ''),
+      floorAreaRatio:              Number(ratio.floorAreaRatio           ?? 0),
+      buildingCoverageRatio:       Number(ratio.buildingCoverageRatio    ?? 0),
     };
   } catch {
     return null;
