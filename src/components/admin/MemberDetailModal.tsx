@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { listSearchLogs, type SearchLog } from '../../services/searchLogsRepo';
+import { listThread, sendAdminReply, markThreadReadByAdmin, type InquiryMessage } from '../../services/inquiriesRepo';
 import type { Profile } from '../../services/profilesRepo';
 import { REAL_ESTATE_TYPES, TRADE_TYPE_LABELS } from '../../types';
 
 interface MemberDetailModalProps {
   member: Profile;
   onClose: () => void;
+  onThreadRead?: () => void;
 }
 
 type DetailTab = 'search' | 'inquiry';
@@ -27,11 +29,14 @@ function statusLabel(s: SearchLog['status']): string {
   }
 }
 
-export function MemberDetailModal({ member, onClose }: MemberDetailModalProps) {
+export function MemberDetailModal({ member, onClose, onThreadRead }: MemberDetailModalProps) {
   const [tab, setTab] = useState<DetailTab>('search');
   const [logs, setLogs] = useState<SearchLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [thread, setThread] = useState<InquiryMessage[]>([]);
+  const [reply, setReply] = useState('');
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -43,6 +48,29 @@ export function MemberDetailModal({ member, onClose }: MemberDetailModalProps) {
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [member.id]);
+
+  useEffect(() => {
+    if (tab !== 'inquiry') return;
+    let alive = true;
+    listThread(member.id).then((rows) => { if (alive) setThread(rows); }).catch(() => {});
+    markThreadReadByAdmin(member.id).then(() => onThreadRead?.());
+    return () => { alive = false; };
+  }, [tab, member.id, onThreadRead]);
+
+  const sendReply = async () => {
+    const body = reply.trim();
+    if (!body || sending) return;
+    setSending(true);
+    try {
+      await sendAdminReply(member.id, body);
+      setReply('');
+      setThread(await listThread(member.id));
+    } catch (err) {
+      console.warn('답변 전송 실패:', err);
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -94,7 +122,37 @@ export function MemberDetailModal({ member, onClose }: MemberDetailModalProps) {
         )}
 
         {tab === 'inquiry' && (
-          <div className="md-inquiry-placeholder md-empty">문의 기능은 곧 추가됩니다.</div>
+          <div className="md-inquiry">
+            <div className="iq-thread">
+              {thread.length === 0 ? (
+                <div className="iq-empty">문의 내역이 없습니다.</div>
+              ) : (
+                thread.map((m) => (
+                  <div key={m.id} className={`iq-msg ${m.senderRole}`}>
+                    <div className="iq-bubble">{m.body}</div>
+                    {m.context && (
+                      <div className="iq-meta">오류정보: {JSON.stringify(m.context)}</div>
+                    )}
+                    <div className="iq-meta">
+                      {m.senderRole === 'admin' ? '관리자' : member.name || '사용자'} · {new Date(m.createdAt).toLocaleString('ko-KR', { hour12: false })}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="iq-input">
+              <textarea
+                value={reply}
+                maxLength={2000}
+                placeholder="답변을 입력하세요…"
+                onChange={(e) => setReply(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) sendReply(); }}
+              />
+              <button className="eos-run-btn iq-send" disabled={sending || !reply.trim()} onClick={sendReply}>
+                {sending ? '전송 중…' : '답변'}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

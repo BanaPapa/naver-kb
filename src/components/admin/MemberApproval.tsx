@@ -14,8 +14,13 @@ const STATUS_LABEL: Record<ProfileStatus, string> = {
   rejected: '거절됨',
 };
 
+interface MemberApprovalProps {
+  unreadUserIds: Set<string>;
+  onThreadRead: () => void;
+}
+
 // 관리자 전용 회원 승인 페이지. 대기/승인/거절 회원을 한 화면에서 관리.
-export function MemberApproval() {
+export function MemberApproval({ unreadUserIds, onThreadRead }: MemberApprovalProps) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +99,7 @@ export function MemberApproval() {
         {pending.length === 0 ? (
           <div className="member-empty">대기 중인 가입 요청이 없습니다.</div>
         ) : (
-          <MemberTable rows={pending} busyId={busyId} onStatusChange={changeStatus} onInfoChange={changeInfo} onOpenDetail={setDetailMember} />
+          <MemberTable rows={pending} busyId={busyId} onStatusChange={changeStatus} onInfoChange={changeInfo} onOpenDetail={setDetailMember} unreadUserIds={unreadUserIds} />
         )}
       </section>
 
@@ -105,12 +110,12 @@ export function MemberApproval() {
         {others.length === 0 ? (
           <div className="member-empty">아직 처리된 회원이 없습니다.</div>
         ) : (
-          <MemberTable rows={others} busyId={busyId} onStatusChange={changeStatus} onInfoChange={changeInfo} onOpenDetail={setDetailMember} />
+          <MemberTable rows={others} busyId={busyId} onStatusChange={changeStatus} onInfoChange={changeInfo} onOpenDetail={setDetailMember} unreadUserIds={unreadUserIds} />
         )}
       </section>
 
       {detailMember && (
-        <MemberDetailModal member={detailMember} onClose={() => setDetailMember(null)} />
+        <MemberDetailModal member={detailMember} onClose={() => setDetailMember(null)} onThreadRead={onThreadRead} />
       )}
     </main>
   );
@@ -182,9 +187,10 @@ interface MemberTableProps {
   onStatusChange: (id: string, status: ProfileStatus) => void;
   onInfoChange: (id: string, fields: { name?: string; company?: string; position?: string; phone?: string }) => void;
   onOpenDetail: (member: Profile) => void;
+  unreadUserIds: Set<string>;
 }
 
-function MemberTable({ rows, busyId, onStatusChange, onInfoChange, onOpenDetail }: MemberTableProps) {
+function MemberTable({ rows, busyId, onStatusChange, onInfoChange, onOpenDetail, unreadUserIds }: MemberTableProps) {
   return (
     <div className="member-table member-table-wide">
       <div className="member-row member-row-head">
@@ -203,7 +209,10 @@ function MemberTable({ rows, busyId, onStatusChange, onInfoChange, onOpenDetail 
         const isAdmin = p.role === 'admin';
         return (
           <div className="member-row" key={p.id} onDoubleClick={() => onOpenDetail(p)}>
-            <span className="member-email">{p.email ?? '(이메일 없음)'}</span>
+            <span className="member-email">
+              {unreadUserIds.has(p.id) && <span className="member-unread-dot" title="새 문의" />}
+              {p.email ?? '(이메일 없음)'}
+            </span>
 
             <span>
               <EditableCell

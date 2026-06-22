@@ -4029,3 +4029,7 @@ thead .col-resize-handle:active {
 .fail-ic { width: 46px; height: 46px; margin: 0 auto 14px; border-radius: 50%; background: #f7768e22; color: #f7768e; font-size: 26px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 .fail-msg { color: #e6edf3; margin: 0 0 18px; line-height: 1.5; }
 .fail-actions { display: flex; gap: 10px; justify-content: center; }
+
+.member-unread-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #f7768e; margin-right: 6px; vertical-align: middle; }
+.md-inquiry { display: flex; flex-direction: column; }
+.md-inquiry .iq-thread { max-height: 46vh; }

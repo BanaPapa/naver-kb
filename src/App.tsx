@@ -13,6 +13,7 @@ import { useAuth } from './hooks/useAuth';
 import { useAgentStatus } from './hooks/useAgentStatus';
 import { useInquiries } from './hooks/useInquiries';
 import { InquiryModal } from './components/inquiry/InquiryModal';
+import { useAdminInbox } from './hooks/useAdminInbox';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('naver');
@@ -30,6 +31,7 @@ export default function App() {
   const isSettings = activeTab === 'settings';
   const isAdminTab = activeTab === 'admin';
   const isAdmin = auth.profile?.role === 'admin' && auth.profile?.status === 'approved';
+  const adminInbox = useAdminInbox(isAdmin);
 
   // Supabase가 설정된 경우에만 로그인/승인 게이트 적용. 미설정이면 기존처럼 바로 사용.
   // 비밀번호 재설정 링크로 진입 → 다른 모든 게이트보다 우선해 새 비밀번호 화면 표시.
@@ -89,6 +91,7 @@ export default function App() {
         isAdmin={isAdmin}
         onOpenInquiry={auth.configured && !isAdmin ? () => openInquiry() : undefined}
         inquiryUnread={inquiries.unread}
+        adminInboxUnread={adminInbox.unreadCount}
       />
 
       <div className="eos-main">
@@ -128,7 +131,9 @@ export default function App() {
         <div style={{ display: isSettings || isAdminTab ? 'none' : 'contents' }}>
           <NaverCrawlerTab crawler={crawler} slots={slots} session={auth.session} agentStatus={agentStatus} isAdmin={isAdmin} onRequestInquiry={openInquiry} />
         </div>
-        {isAdminTab && isAdmin && <MemberApproval />}
+        {isAdminTab && isAdmin && (
+          <MemberApproval unreadUserIds={adminInbox.unreadUserIds} onThreadRead={adminInbox.reload} />
+        )}
         {isSettings && (
           <SettingsPage settings={settings} onUpdate={update} onAccent={setAccent} />
         )}
