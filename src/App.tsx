@@ -11,6 +11,8 @@ import { useSlots } from './hooks/useSlots';
 import { useSettings } from './hooks/useSettings';
 import { useAuth } from './hooks/useAuth';
 import { useAgentStatus } from './hooks/useAgentStatus';
+import { useInquiries } from './hooks/useInquiries';
+import { InquiryModal } from './components/inquiry/InquiryModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('naver');
@@ -21,6 +23,9 @@ export default function App() {
   const slots = useSlots(auth.user?.id ?? null);
   const { settings, update, setAccent } = useSettings();
   const { status, properties } = crawler.state;
+  const inquiries = useInquiries(auth.session);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
+  const [inquiryPrefill, setInquiryPrefill] = useState<Record<string, unknown> | null>(null);
 
   const isSettings = activeTab === 'settings';
   const isAdminTab = activeTab === 'admin';
@@ -66,6 +71,12 @@ export default function App() {
             ? '오류 발생'
             : '네이버 부동산 · 대기 중';
 
+  const openInquiry = (prefill?: Record<string, unknown> | null) => {
+    setInquiryPrefill(prefill ?? null);
+    setInquiryOpen(true);
+    inquiries.markRead();
+  };
+
   return (
     <div className={`eos-app${sideCollapsed ? ' side-collapsed' : ''}`}>
       <Sidebar
@@ -76,6 +87,8 @@ export default function App() {
         userEmail={auth.user?.email ?? null}
         onSignOut={auth.configured ? auth.signOut : undefined}
         isAdmin={isAdmin}
+        onOpenInquiry={auth.configured && !isAdmin ? () => openInquiry() : undefined}
+        inquiryUnread={inquiries.unread}
       />
 
       <div className="eos-main">
@@ -113,13 +126,22 @@ export default function App() {
         {/* 매물시세 탭은 항상 마운트 상태로 두고 다른 탭일 때만 숨긴다.
             (언마운트하면 단위/지역/필터 등 로컬 선택 상태가 초기화되는 문제 방지) */}
         <div style={{ display: isSettings || isAdminTab ? 'none' : 'contents' }}>
-          <NaverCrawlerTab crawler={crawler} slots={slots} session={auth.session} agentStatus={agentStatus} isAdmin={isAdmin} />
+          <NaverCrawlerTab crawler={crawler} slots={slots} session={auth.session} agentStatus={agentStatus} isAdmin={isAdmin} onRequestInquiry={openInquiry} />
         </div>
         {isAdminTab && isAdmin && <MemberApproval />}
         {isSettings && (
           <SettingsPage settings={settings} onUpdate={update} onAccent={setAccent} />
         )}
       </div>
+
+      {inquiryOpen && (
+        <InquiryModal
+          thread={inquiries.thread}
+          prefillContext={inquiryPrefill}
+          onSend={inquiries.send}
+          onClose={() => setInquiryOpen(false)}
+        />
+      )}
     </div>
   );
 }
