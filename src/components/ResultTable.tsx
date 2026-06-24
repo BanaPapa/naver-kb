@@ -592,12 +592,15 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
     };
 
     const sortedReps = [...reps].sort(cmp);
-    // 자식(중복)은 정렬하지 않는다 — 원래 순서 그대로 대표 뒤에 붙어 따라다닌다.
-    const childrenOf = (gid: string | undefined): Property[] =>
-      gid ? (childMap.get(gid) ?? []) : [];
+    // 자식(중복)은 '그룹 내부'에서만 같은 기준(cmp)으로 정렬한다.
+    //  - 그룹의 위치는 항상 대표(rep) 값 기준 → 그룹끼리 섞이지 않는다.
+    //  - 대표는 자식보다 싸든 비싸든 항상 그룹 선두에 고정(아래 [rep, ...] 순서).
+    //  - 펼쳤을 때 각 그룹 내부는 정렬되어 보인다(열 전체가 단조 증가하진 않음 — 그룹 경계 유지).
+    const sortedChildrenOf = (gid: string | undefined): Property[] =>
+      gid ? [...(childMap.get(gid) ?? [])].sort(cmp) : [];
 
     // 4. All data for export (always fully expanded)
-    const allFil: Property[] = sortedReps.flatMap((rep) => [rep, ...childrenOf(rep.groupId)]);
+    const allFil: Property[] = sortedReps.flatMap((rep) => [rep, ...sortedChildrenOf(rep.groupId)]);
 
     // 5. Display rows with expansion state
     const isGroupExpanded = (gid: string) =>
@@ -605,7 +608,7 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
 
     const displayRows: Property[] = sortedReps.flatMap((rep) => {
       const expanded = rep.groupId ? isGroupExpanded(rep.groupId) : false;
-      return expanded ? [rep, ...childrenOf(rep.groupId)] : [rep];
+      return expanded ? [rep, ...sortedChildrenOf(rep.groupId)] : [rep];
     });
 
     // 6. Paginate
