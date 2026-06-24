@@ -105,6 +105,41 @@ function priceSortValue(p: Property): number {
   return 0;
 }
 
+function stablePropertyIdentity(p: Property): string {
+  const primary = p.articleNumber?.trim();
+  if (primary) return primary;
+  return stableVisualIdentity(p);
+}
+
+function stableVisualIdentity(p: Property): string {
+  return [
+    p.groupId ?? '',
+    p.complexNumber,
+    p.complexName,
+    p.dongName,
+    p.floorInfo,
+    p.direction,
+    p.supplySpaceName,
+    p.supplySpace,
+    p.exclusiveSpace,
+    p.dealPrice,
+    p.warrantyPrice,
+    p.rentPrice,
+    p.premiumPrice,
+    p.optionPrice,
+    p.brokerageName,
+    p.articleFeature,
+  ].join('|');
+}
+
+function stableRepresentativeIdentity(p: Property): string {
+  return p.groupId?.trim() || stablePropertyIdentity(p);
+}
+
+function stableChildIdentity(p: Property): string {
+  return stableVisualIdentity(p);
+}
+
 function getSortValue(p: Property, key: SortKey, realEstateType: string): number | string {
   if (key === 'dealPrice')     return priceSortValue(p);
   if (key === 'pyeongPrice')   return pyeongUnitPriceWon(p, realEstateType);
@@ -510,7 +545,17 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
   } = useMemo(() => {
     // 1. 모든 필터는 '대표(rep)' 에만 적용한다. 중복(children)은 독립적으로
     //    필터/정렬하지 않고, 통과한 대표를 따라다니는 '접힌 폴더'로 취급한다.
-    let reps = properties.filter((p) => !p.isDuplicate);
+    const uniqueReps: Property[] = [];
+    const seenReps = new Set<string>();
+    for (const p of properties) {
+      if (p.isDuplicate) continue;
+      const key = stableRepresentativeIdentity(p);
+      if (seenReps.has(key)) continue;
+      seenReps.add(key);
+      uniqueReps.push(p);
+    }
+
+    let reps = uniqueReps;
     if (complexFilter)    reps = reps.filter((p) => p.complexName === complexFilter);
     if (tradeTypeFilter)  reps = reps.filter((p) => p.tradeType   === tradeTypeFilter);
 
@@ -555,9 +600,16 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
     //    자식은 필터 대상이 아니므로, 대표가 통과하면 그 자식은 전부 따라온다.
     const passedGroupIds = new Set(reps.map((p) => p.groupId).filter(Boolean) as string[]);
     const childMap = new Map<string, Property[]>();
+    const seenChildrenByGroup = new Map<string, Set<string>>();
     let dupCnt = 0;
     for (const p of properties) {
       if (p.isDuplicate && p.groupId && passedGroupIds.has(p.groupId)) {
+        const childKey = stableChildIdentity(p);
+        const seenChildren = seenChildrenByGroup.get(p.groupId) ?? new Set<string>();
+        if (seenChildren.has(childKey)) continue;
+        seenChildren.add(childKey);
+        seenChildrenByGroup.set(p.groupId, seenChildren);
+
         const arr = childMap.get(p.groupId) ?? [];
         arr.push(p);
         childMap.set(p.groupId, arr);
