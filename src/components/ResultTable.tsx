@@ -603,20 +603,32 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
 
     // 5. Display rows with expansion state
     const isGroupExpanded = (gid: string) =>
-      isDupHidden ? expandedGroups.has(gid) : !expandedGroups.has(gid);
+      !isDupHidden || expandedGroups.has(gid);
 
     // 부모(rep)만 정렬 기준으로 순서 결정.
     // 자식은 정렬 대상이 아니며, 부모 바로 아래에 원래 순서 그대로 붙는다.
     // 부모가 어디로 이동하든 자식은 항상 해당 부모 바로 아래에만 위치한다.
-    const displayRows: Property[] = sortedReps.flatMap((rep) => {
+    const displayGroups: Property[][] = sortedReps.map((rep) => {
+      const children = rep.groupId ? (childMap.get(rep.groupId) ?? []) : [];
       const expanded = rep.groupId ? isGroupExpanded(rep.groupId) : false;
-      return expanded ? [rep, ...(childMap.get(rep.groupId!) ?? [])] : [rep];
+      return expanded ? [rep, ...children] : [rep];
     });
 
     // 6. Paginate
-    const total = Math.ceil(displayRows.length / PAGE_SIZE);
+    const pages: Property[][] = [];
+    let curPage: Property[] = [];
+    for (const group of displayGroups) {
+      if (curPage.length > 0 && curPage.length + group.length > PAGE_SIZE) {
+        pages.push(curPage);
+        curPage = [];
+      }
+      curPage.push(...group);
+    }
+    if (curPage.length > 0) pages.push(curPage);
+
+    const total = pages.length;
     const safe  = Math.min(page, Math.max(0, total - 1));
-    const pag   = displayRows.slice(safe * PAGE_SIZE, (safe + 1) * PAGE_SIZE);
+    const pag   = pages[safe] ?? [];
 
     return {
       filteredReps: sortedReps,
@@ -978,7 +990,7 @@ export function ResultTable({ searchKey, status, properties, realEstateType, are
                   : (!isDup && p.realtorCount > 1 ? p.realtorCount - 1 : 0);
                 const isExpandable = !isDup && !!p.groupId && actualChildCount > 0;
                 const isExpanded = isExpandable && (
-                  isDupHidden ? expandedGroups.has(p.groupId!) : !expandedGroups.has(p.groupId!)
+                  !isDupHidden || expandedGroups.has(p.groupId!)
                 );
                 // 대표 행을 선택하면 중복 하위 행도 같이 강조
                 const isInSelectedGroup = !!(isDup && p.groupId && selectedGroupId === p.groupId);
