@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ModalPortal } from '../../../shared/ui/ModalPortal';
 import { useSlotStore } from '../model/slot-store';
 import { summarizeRegions } from '../lib/name';
 import { SLOT_COUNT, SLOTS_PER_PAGE, type SlotEntry, type SlotMode } from '../model/types';
@@ -72,6 +73,7 @@ export function SlotModal({ mode, onClose }: SlotModalProps) {
   };
 
   return (
+    <ModalPortal>
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onMouseDown={onClose}
@@ -253,5 +255,6 @@ export function SlotModal({ mode, onClose }: SlotModalProps) {
         </div>
       )}
     </div>
+    </ModalPortal>
   );
 }

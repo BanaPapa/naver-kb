@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ModalPortal } from '../../../shared/ui/ModalPortal';
 import { Monitor, SlidersHorizontal, Bookmark, type LucideIcon } from 'lucide-react';
 import { useAppStore } from '../../../shared/lib/store';
 import { useMonthlyStore } from '../../../shared/lib/monthly-store';
@@ -413,6 +414,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ open, onClose }) =
       : 'h-[88vh] w-[860px] max-w-[94vw]';
 
   return (
+    <ModalPortal>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className={`flex ${sizeClass} flex-col overflow-hidden rounded-2xl bg-white shadow-xl`}>
         {/* 헤더 */}
@@ -681,6 +683,7 @@ export const AnalysisModal: React.FC<AnalysisModalProps> = ({ open, onClose }) =
         )}
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

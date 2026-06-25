@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ModalPortal } from '../../../shared/ui/ModalPortal';
 import { runExport, type ExportFormat, type ExportMode } from '../lib/build';
 
 interface ExportModalProps {
@@ -56,6 +57,7 @@ export function ExportModal({ onClose }: ExportModalProps) {
   };
 
   return (
+    <ModalPortal>
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onMouseDown={onClose}
@@ -173,5 +175,6 @@ export function ExportModal({ onClose }: ExportModalProps) {
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }

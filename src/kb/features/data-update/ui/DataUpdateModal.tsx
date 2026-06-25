@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useKbUpdateStore } from '../../../shared/lib/kb-source/progress-store';
 import { DATASET_LABEL, type KbDatasetKey } from '../../../shared/lib/kb-source/config';
+import { ModalPortal } from '../../../shared/ui/ModalPortal';
 
 // KB 데이터 업데이트 모달.
 // Supabase 데이터 소스에서 버전이 바뀐 번들을 새로 받을 때만 표시된다.
@@ -19,6 +20,7 @@ const DataUpdateModal: FC = () => {
   if (!active) return null;
 
   return (
+    <ModalPortal>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md rounded-2xl bg-[var(--raise)] p-6 shadow-xl border border-[var(--border)]">
         <h2 className="text-lg font-semibold text-[var(--fg)]">최신 데이터로 업데이트 중</h2>
@@ -49,6 +51,7 @@ const DataUpdateModal: FC = () => {
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

@@ -1,4 +1,5 @@
 import { useAppStore } from '../../../shared/lib/store';
+import { ModalPortal } from '../../../shared/ui/ModalPortal';
 import { useMonthlyStore } from '../../../shared/lib/monthly-store';
 import { summarizeRegions } from '../lib/name';
 import type { SlotMode } from '../model/types';
@@ -49,6 +50,7 @@ export function SaveChoiceDialog({ slotIndex, originMode, onChoose, onCancel }: 
     summarizeRegions(monthly.selectedRegions, monthly.regionLabels);
 
   return (
+    <ModalPortal>
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
       onMouseDown={e => {
@@ -139,5 +141,6 @@ export function SaveChoiceDialog({ slotIndex, originMode, onChoose, onCancel }: 
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
