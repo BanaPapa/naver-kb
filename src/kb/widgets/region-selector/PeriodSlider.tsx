@@ -65,7 +65,7 @@ export const PeriodSlider: React.FC<PeriodSliderProps> = props => {
   return (
     <div>
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-600">기간 선택</span>
+        <span className="text-xs font-semibold text-gray-600">표시 기간</span>
         <span className="font-mono text-[11px] text-blue-600">{fromDate} ~ {toDate}</span>
       </div>
 

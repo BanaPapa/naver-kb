@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import { StoreProvider } from './app/providers';
 import { RegionSelector } from './widgets/region-selector';
 import { ChartDashboard } from './widgets/chart-dashboard';
@@ -8,7 +8,7 @@ import { MonthlyChartDashboard } from './widgets/monthly-chart-dashboard';
 import { MonthlyTradeDashboard } from './widgets/monthly-trade-dashboard';
 import { MonthlyMarketDashboard } from './widgets/monthly-market-dashboard';
 import { useAppStore } from './shared/lib/store';
-import { useMonthlyStore, type ViewMode, type WeeklyTab } from './shared/lib/monthly-store';
+import { useMonthlyStore, type WeeklyTab } from './shared/lib/monthly-store';
 import { AnalysisModal } from './features/analysis';
 import { SlotControls } from './features/chart-slots';
 import { ExportButton } from './features/data-export';
@@ -18,21 +18,6 @@ import { DataUpdateModal } from './features/data-update';
 // 원본 KB 앱의 App.tsx에서 좌측 사이드바(AppNav)와 eos-app 래퍼를 제거하고
 // 콘텐츠(헤더 + 작업영역 + 분석 모달)만 호스트의 eos-main 안에 마운트한다.
 // 모든 KB 스타일은 .kb-scope 로 한정(kb-shell.css)되어 매물시세 화면에 영향이 없다.
-
-const MODE_TABS: { key: ViewMode; label: string }[] = [
-  { key: 'weekly', label: '주간' },
-  { key: 'monthly', label: '월간' },
-];
-
-// 시세·거래는 주간·월간 공용, 시장지표는 월간 전용.
-const WEEKLY_TABS: { key: WeeklyTab; label: string }[] = [
-  { key: 'price', label: '시세지표' },
-  { key: 'trade', label: '거래지표' },
-];
-const MONTHLY_TABS: { key: WeeklyTab; label: string }[] = [
-  ...WEEKLY_TABS,
-  { key: 'market', label: '시장지표' },
-];
 
 const TAB_LABEL: Record<WeeklyTab, string> = {
   price: '시세지표',
@@ -99,12 +84,16 @@ const ShellHeader: FC<{ onOpenAnalysis: () => void }> = ({ onOpenAnalysis }) => 
 };
 
 const KbModule: FC = () => {
-  const { mode, setMode, weeklyTab, setWeeklyTab } = useMonthlyStore();
+  const { mode, weeklyTab, setWeeklyTab } = useMonthlyStore();
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [ctrlCollapsed, setCtrlCollapsed] = useState(false);
 
-  const tabs = mode === 'monthly' ? MONTHLY_TABS : WEEKLY_TABS;
-  const title = `${mode === 'monthly' ? '월간' : '주간'} ${TAB_LABEL[weeklyTab]}`;
+  useEffect(() => {
+    if (mode === 'weekly' && weeklyTab === 'market') setWeeklyTab('price');
+  }, [mode, weeklyTab, setWeeklyTab]);
+
+  const displayTab = mode === 'weekly' && weeklyTab === 'market' ? 'price' : weeklyTab;
+  const title = `${mode === 'monthly' ? '월간' : '주간'} ${TAB_LABEL[displayTab]}`;
 
   return (
     <StoreProvider>
@@ -142,30 +131,6 @@ const KbModule: FC = () => {
           <div className="eos-view">
             <div className="eos-mod-head">
               <h1>{title}</h1>
-              <div className="mh-right">
-                <div className="eos-seg">
-                  {MODE_TABS.map(t => (
-                    <button
-                      key={t.key}
-                      className={`eos-seg-btn${mode === t.key ? ' active' : ''}`}
-                      onClick={() => setMode(t.key)}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="eos-seg">
-                  {tabs.map(t => (
-                    <button
-                      key={t.key}
-                      className={`eos-seg-btn${weeklyTab === t.key ? ' active' : ''}`}
-                      onClick={() => setWeeklyTab(t.key)}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {mode === 'weekly' ? <WeeklyView /> : <MonthlyView />}

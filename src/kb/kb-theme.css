@@ -24,6 +24,54 @@
   background-color: var(--surface-3);
 }
 
+/* KB portal modals (save/export/analysis) use Tailwind utility classes, so retint them
+   onto the host Estate OS surface and typography tokens. */
+.kb-portal .bg-white {
+  background-color: var(--raise) !important;
+}
+.kb-portal .bg-gray-50,
+.kb-portal .bg-gray-50\/40,
+.kb-portal .bg-gray-50\/50,
+.kb-portal .bg-gray-50\/60,
+.kb-portal .bg-gray-100 {
+  background-color: var(--surface) !important;
+}
+.kb-portal .text-gray-900,
+.kb-portal .text-gray-800,
+.kb-portal .text-gray-700 {
+  color: var(--fg) !important;
+}
+.kb-portal .text-gray-600,
+.kb-portal .text-gray-500 {
+  color: var(--fg-2) !important;
+}
+.kb-portal .text-gray-400,
+.kb-portal .text-gray-300 {
+  color: var(--muted) !important;
+}
+.kb-portal [class*="border-gray-"],
+.kb-portal .border {
+  border-color: var(--border) !important;
+}
+.kb-portal .shadow-xl,
+.kb-portal .shadow-2xl {
+  box-shadow: var(--shadow) !important;
+}
+.kb-portal button.bg-blue-600 {
+  min-height: 42px;
+  border: 0 !important;
+  background: var(--blue) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 18px -6px var(--blue-dim), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.kb-portal button.bg-blue-600:hover:not(:disabled) {
+  background: var(--blue) !important;
+  transform: translateY(-1px);
+}
+.kb-portal .text-white {
+  color: #fff !important;
+}
+
 /* KB primary action buttons that must follow Settings > Theme & Color. */
 :where(.kb-scope, .kb-portal) .kb-accent-button {
   height: 46px;

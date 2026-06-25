@@ -24,7 +24,7 @@ export function RegionSyncToggle() {
   };
 
   return (
-    <div className="px-4 pt-3">
+    <div className="pt-3">
       <label
         className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 transition-colors ${
           linked ? 'border-blue-300 bg-blue-50' : 'border-gray-300 bg-gray-100 hover:bg-gray-200'

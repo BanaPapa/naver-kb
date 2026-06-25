@@ -547,6 +547,17 @@
   color: var(--blue-contrast, #fff);
   box-shadow: 0 6px 16px -10px color-mix(in srgb, var(--blue) 70%, transparent);
 }
+.kb-scope .kb-view-controls {
+  display: grid;
+  gap: 8px;
+}
+.kb-scope .kb-view-controls .eos-seg {
+  width: 100%;
+}
+.kb-scope .kb-view-controls .eos-seg-btn {
+  flex: 1;
+  text-align: center;
+}
 
 .kb-scope .eos-pill {
   display: inline-flex;

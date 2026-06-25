@@ -8,6 +8,7 @@ import { buildMidOptions, type MidOption } from '../../shared/lib/kb-mid-options
 import { InfoTip } from '../../shared/ui/InfoTip';
 import { RegionSyncToggle } from '../../features/region-sync';
 import { PeriodSlider } from './PeriodSlider';
+import { ViewModeControls } from './ViewModeControls';
 
 // 이동평균 기간 선택지(주)
 const MA_OPTIONS = [4, 13, 26, 52];
@@ -160,22 +161,11 @@ export const RegionSelector: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* 주간·월간 연동 토글 */}
-      <RegionSyncToggle />
-
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold text-gray-800 tracking-wide">지역 선택</h2>
-          {selectedRegions.length > 0 && (
-            <button
-              onClick={clearRegions}
-              className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-400 transition-colors"
-            >
-              전체 해제
-            </button>
-          )}
-        </div>
+      {/* 기간 선택 */}
+      <div className="p-4">
+        <h2 className="mb-3 text-sm font-bold text-gray-800 tracking-wide">기간 선택</h2>
+        <ViewModeControls />
+        <RegionSyncToggle />
 
         {/* 기간 선택 (프리셋 + 드래그 막대) */}
         <PeriodSlider />
@@ -245,8 +235,22 @@ export const RegionSelector: React.FC = () => {
         )}
       </div>
 
+      <div className="mx-4 border-t border-gray-100" />
+
       {/* Cascading region selector */}
       <div className="p-4 flex flex-col gap-3 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-gray-800 tracking-wide">지역 선택</h2>
+          {selectedRegions.length > 0 && (
+            <button
+              onClick={clearRegions}
+              className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-400 transition-colors"
+            >
+              전체 해제
+            </button>
+          )}
+        </div>
+
         {/* 대지역 */}
         <div>
           <label className="block text-xs text-gray-400 mb-1">대지역 (시/도 · 집계)</label>
