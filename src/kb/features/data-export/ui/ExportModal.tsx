@@ -146,7 +146,7 @@ export function ExportModal({ onClose }: ExportModalProps) {
           </section>
 
           {/* 안내 */}
-          <div className="mt-4 rounded-lg bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-800">
+          <div className="eos-tip-amber mt-4 rounded-lg px-3 py-2.5 text-sm leading-relaxed">
             <span className="font-semibold">활용 팁.</span> 직접 분석할 때는 <b>Excel</b>이 익숙합니다. 다만 부동산
             시장이 학습된 AI 에이전트에게는 <b>JSON</b>(기계가 읽기 좋음) 또는 <b>Markdown</b>(요약표+원본 동시
             포함)을 전달하면, 같은 데이터라도 훨씬 명확한 분석을 받을 수 있습니다.

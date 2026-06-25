@@ -27,26 +27,26 @@ export function RegionSyncToggle() {
     <div className="px-4 pt-3">
       <label
         className={`flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 transition-colors ${
-          linked ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+          linked ? 'border-blue-300 bg-blue-50' : 'border-gray-300 bg-gray-100 hover:bg-gray-200'
         }`}
       >
         <input
           type="checkbox"
           checked={linked}
           onChange={toggle}
-          className="mt-0.5 h-4 w-4 flex-none rounded border-gray-300 text-blue-600"
+          className="mt-0.5 flex-none"
         />
         <span className="min-w-0">
           <span className={`block text-sm font-semibold ${linked ? 'text-blue-700' : 'text-gray-700'}`}>
             주간·월간 연동
           </span>
-          <span className="block text-xs leading-snug text-gray-400">
+          <span className="block text-xs leading-snug text-gray-500">
             지역·기준월·기간을 한쪽에서 바꾸면 양쪽이 함께 바뀝니다.
           </span>
         </span>
       </label>
       {linked && notice && (
-        <p className="mt-1.5 rounded-md bg-amber-50 px-2.5 py-1.5 text-xs leading-snug text-amber-700">
+        <p className="eos-tip-amber mt-1.5 rounded-md px-2.5 py-1.5 text-xs leading-snug">
           {notice}
         </p>
       )}

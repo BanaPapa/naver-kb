@@ -725,18 +725,19 @@ body.eos-body {
   padding: 0 16px;
   border: 0;
   border-radius: 10px;
-  background: linear-gradient(120deg, var(--purple-2), var(--blue));
-  color: #fff;
+  background: var(--teal);
+  color: #0a1929;
   font-size: 15px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 10px 26px -12px rgba(139, 92, 246, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
-  transition: transform 0.16s var(--ease), box-shadow 0.16s;
+  box-shadow: 0 4px 16px -8px rgba(45, 212, 191, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: transform 0.16s var(--ease), box-shadow 0.16s, filter 0.16s;
 }
 .eos-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
   transform: translateY(-1px);
-  box-shadow: 0 16px 34px -12px rgba(139, 92, 246, 1), inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 22px -8px rgba(45, 212, 191, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 .eos-btn-primary:disabled {
   opacity: 0.45;
