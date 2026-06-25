@@ -13,6 +13,7 @@ import { AnalysisModal } from './features/analysis';
 import { SlotControls } from './features/chart-slots';
 import { ExportButton } from './features/data-export';
 import { DataUpdateModal } from './features/data-update';
+import { ViewModeControls } from './widgets/region-selector/ViewModeControls';
 
 // KB 시계열 분석 모듈 — 통합 셸(naver-kb)의 'KB 시계열 분석' 탭에서 렌더된다.
 // 원본 KB 앱의 App.tsx에서 좌측 사이드바(AppNav)와 eos-app 래퍼를 제거하고
@@ -46,19 +47,12 @@ const ShellHeader: FC<{ onOpenAnalysis: () => void }> = ({ onOpenAnalysis }) => 
   return (
     <header className="eos-hdr">
       <div className="eos-crumb">
-        <svg className="home" viewBox="0 0 24 24">
-          <path d="M3 11l9-7 9 7" />
-          <path d="M5 10v10h14V10" />
-        </svg>
-        <svg className="sep" viewBox="0 0 24 24">
-          <path d="M9 6l6 6-6 6" />
-        </svg>
         <span>분석 모듈</span>
         <svg className="sep" viewBox="0 0 24 24">
           <path d="M9 6l6 6-6 6" />
         </svg>
-        <b>KB 시계열 분석</b>
-        <span className="tag">LIVE</span>
+        <b>시계열분석</b>
+        <ViewModeControls compact />
       </div>
 
       <div className="eos-hdr-right">

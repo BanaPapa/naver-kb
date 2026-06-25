@@ -8,7 +8,6 @@ import { monthlyLocal, type MonthlyRegionLookup } from '../../entities/monthly-d
 import { InfoTip } from '../../shared/ui/InfoTip';
 import { RegionSyncToggle } from '../../features/region-sync';
 import { PeriodSlider } from '../region-selector/PeriodSlider';
-import { ViewModeControls } from '../region-selector/ViewModeControls';
 
 // 이동평균 기간 선택지(월)
 const MA_OPTIONS = [3, 6, 12, 24];
@@ -184,21 +183,22 @@ export const MonthlyRegionCascade: React.FC = () => {
       {/* 기간 선택 */}
       <div className="p-4">
         <h2 className="mb-3 text-sm font-bold text-gray-800 tracking-wide">기간 선택</h2>
-        <ViewModeControls />
         <RegionSyncToggle />
 
         {/* 기간 선택 (프리셋 + 드래그 막대) — 월간 날짜축 주입 */}
-        <PeriodSlider
-          dates={allDates}
-          fromDate={fromDate}
-          toDate={toDate}
-          setFromDate={setFromDate}
-          setToDate={setToDate}
-        />
+        <div className="mt-4">
+          <PeriodSlider
+            dates={allDates}
+            fromDate={fromDate}
+            toDate={toDate}
+            setFromDate={setFromDate}
+            setToDate={setToDate}
+          />
+        </div>
 
         {/* 지수 기준월 — 시세지표(지수 리베이스)에만 적용 */}
         {isPrice && (
-          <div className="mt-3">
+          <div className="mt-4">
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs text-gray-400">지수 기준월 (이 달 = 100.0)</label>
               <button
@@ -261,10 +261,10 @@ export const MonthlyRegionCascade: React.FC = () => {
         )}
       </div>
 
-      <div className="mx-4 border-t border-gray-100" />
+      <div className="mx-4 mt-4 border-t border-gray-100" />
 
       {/* Cascading region selector (주간 RegionSelector와 동일 구조) */}
-      <div className="p-4 flex flex-col gap-3 border-b border-gray-100">
+      <div className="p-4 pt-6 flex flex-col gap-3 border-b border-gray-100">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-gray-800 tracking-wide">지역 선택</h2>
           {selectedRegions.length > 0 && (

@@ -8,7 +8,6 @@ import { buildMidOptions, type MidOption } from '../../shared/lib/kb-mid-options
 import { InfoTip } from '../../shared/ui/InfoTip';
 import { RegionSyncToggle } from '../../features/region-sync';
 import { PeriodSlider } from './PeriodSlider';
-import { ViewModeControls } from './ViewModeControls';
 
 // 이동평균 기간 선택지(주)
 const MA_OPTIONS = [4, 13, 26, 52];
@@ -164,15 +163,16 @@ export const RegionSelector: React.FC = () => {
       {/* 기간 선택 */}
       <div className="p-4">
         <h2 className="mb-3 text-sm font-bold text-gray-800 tracking-wide">기간 선택</h2>
-        <ViewModeControls />
         <RegionSyncToggle />
 
         {/* 기간 선택 (프리셋 + 드래그 막대) */}
-        <PeriodSlider />
+        <div className="mt-4">
+          <PeriodSlider />
+        </div>
 
         {/* 지수 기준일 — 시세지표(지수 리베이스)에만 적용 */}
         {!isTrade && (
-          <div className="mt-3">
+          <div className="mt-4">
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs text-gray-400">지수 기준일 (이 주 = 100.0)</label>
               <button
@@ -235,10 +235,10 @@ export const RegionSelector: React.FC = () => {
         )}
       </div>
 
-      <div className="mx-4 border-t border-gray-100" />
+      <div className="mx-4 mt-4 border-t border-gray-100" />
 
       {/* Cascading region selector */}
-      <div className="p-4 flex flex-col gap-3 border-b border-gray-100">
+      <div className="p-4 pt-6 flex flex-col gap-3 border-b border-gray-100">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-gray-800 tracking-wide">지역 선택</h2>
           {selectedRegions.length > 0 && (

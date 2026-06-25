@@ -15,7 +15,11 @@ const MONTHLY_TABS: { key: WeeklyTab; label: string }[] = [
   { key: 'market', label: '시장지표' },
 ];
 
-export function ViewModeControls() {
+interface ViewModeControlsProps {
+  compact?: boolean;
+}
+
+export function ViewModeControls({ compact = false }: ViewModeControlsProps) {
   const { mode, setMode, weeklyTab, setWeeklyTab } = useMonthlyStore();
   const tabs = mode === 'monthly' ? MONTHLY_TABS : WEEKLY_TABS;
   const selectMode = (next: ViewMode) => {
@@ -24,7 +28,7 @@ export function ViewModeControls() {
   };
 
   return (
-    <div className="kb-view-controls">
+    <div className={`kb-view-controls${compact ? ' compact' : ''}`}>
       <div className="eos-seg">
         {MODE_TABS.map(t => (
           <button

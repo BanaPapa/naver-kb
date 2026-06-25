@@ -992,6 +992,22 @@ body {
   opacity: 1;
   stroke: var(--blue);
 }
+.eos-nav-item.active .eos-dot.live {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  background: var(--blue);
+  box-shadow: 0 0 0 5px var(--blue-dim), 0 0 16px var(--blue);
+}
+.eos-nav-item.active .eos-dot.live::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: inherit;
+  border: 1px solid var(--blue);
+  opacity: 0;
+  animation: eos-active-dot 1.8s infinite;
+}
 .eos-nav-item.active::before {
   content: '';
   position: absolute;
@@ -1003,6 +1019,17 @@ body {
   border-radius: 0 4px 4px 0;
   background: var(--blue);
   box-shadow: 0 0 12px var(--blue);
+}
+@keyframes eos-active-dot {
+  0% {
+    transform: scale(0.45);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(1.05);
+    opacity: 0;
+  }
 }
 .eos-nav-item.disabled {
   opacity: 0.5;
