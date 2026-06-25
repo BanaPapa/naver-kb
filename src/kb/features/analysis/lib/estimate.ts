@@ -2,8 +2,8 @@
 // 입력 토큰: 실제 전송 페이로드(시스템 프롬프트 + user JSON)를 토크나이저로 정확히 측정.
 // 출력 토큰: 탭 수·지표 수 기반 휴리스틱(범위). 비용: 선택 모델 단가 × 토큰.
 
-import systemPrompt from '../../../../docs/analysis-prompt.md?raw';
-import qaPrompt from '../../../../docs/analysis-qa-prompt.md?raw';
+import systemPrompt from '../prompts/analysis-prompt.md?raw';
+import qaPrompt from '../prompts/analysis-qa-prompt.md?raw';
 import type { AnalysisRequest, AskRequest } from '../../../entities/analysis';
 import type { ModelInfo } from '../../../entities/provider/model/provider.types';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type AppTab = 'naver' | 'settings' | 'admin';
+export type AppTab = 'naver' | 'kb' | 'settings' | 'admin';
 
 type ModStatus = 'live' | 'soon';
 
@@ -19,8 +19,9 @@ interface NavModule {
 const NAV_MODULES: NavModule[] = [
   {
     key: 'kb-timeseries',
+    tab: 'kb',
     label: 'KB 시계열 분석',
-    status: 'soon',
+    status: 'live',
     icon: (
       <svg className="ic" viewBox="0 0 24 24">
         <path d="M3 3v18h18" />
