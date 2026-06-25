@@ -10,9 +10,14 @@
 - 셸은 **호스트 것 하나만** 사용. KB는 자체 사이드바(AppNav) 버리고 콘텐츠만 마운트
 - CSS: Tailwind **preflight 비활성** + KB 전역 리셋 제거. estate-os.css는 콘텐츠 규칙만
 
+## 진행 상태 (2026-06-25)
+- Stage 1 스택 정렬 ✅  / Stage 2 소스 이식 ✅ / Stage 3 분석 백엔드(dev) ✅ / Stage 4 배선 ✅ / Stage 5 검증 ✅
+- 브라우저 검증: 매물시세·KB 양 탭 정상, 차트 19개 실데이터 렌더, 분석 모달 정상, naver 다크테마 무손상
+- 남은 것: naver-kb로 push + PR (사용자 승인 대기). 프로덕션(Vercel) AI 분석은 dev 전용 브릿지라 미지원(원본 KB와 동일) — 차트/데이터는 프로덕션 정상.
+
 ## 단계 (각 단계 끝에 빌드 검증 게이트)
 
-### Stage 1 — 스택 정렬 (naver-kb → React19/Vite7 + Tailwind)  [진행중]
+### Stage 1 — 스택 정렬 (naver-kb → React19/Vite7 + Tailwind)  ✅
 - [ ] package.json: react/react-dom 19, vite 7, @vitejs/plugin-react 최신
 - [ ] KB 런타임 의존성 추가: zustand, recharts, lucide-react, xlsx, gpt-tokenizer,
       @tailwindcss/forms, @tailwindcss/typography, tailwindcss/postcss/autoprefixer
