@@ -10,10 +10,7 @@ export function SlotControls() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="rounded-lg border border-gray-300 px-3 py-1.5 text-base font-semibold text-gray-700 hover:bg-gray-100"
-      >
+      <button onClick={() => setOpen(true)} className="eos-btn-ghost">
         저장
       </button>
       {open && <SlotModal mode={mode} onClose={() => setOpen(false)} />}

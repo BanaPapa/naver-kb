@@ -27,3 +27,47 @@
   color: inherit;
   font: inherit;
 }
+
+/* Amber 계열 (tailwind.config 미매핑 → 직접 보정) */
+.bg-amber-50  { background-color: var(--yellow-dim) !important; }
+.text-amber-700, .text-amber-800 { color: var(--yellow) !important; }
+.border-amber-300 { border-color: rgba(245, 184, 92, 0.35) !important; }
+
+/* Violet 배지 (미매핑) */
+.bg-violet-100 { background-color: var(--purple-dim) !important; }
+.text-violet-700 { color: var(--purple) !important; }
+
+/* Green 저장됨/복사됨 disabled 상태 (미매핑) */
+.disabled\:bg-green-50:disabled  { background-color: rgba(45, 212, 191, 0.1) !important; }
+.disabled\:text-green-600:disabled { color: var(--teal) !important; }
+.disabled\:border-green-200:disabled { border-color: rgba(45, 212, 191, 0.25) !important; }
+
+/* Red 오류 텍스트 (미매핑) */
+.text-red-600 { color: var(--red) !important; }
+
+/* 닫기 버튼 (아이콘형 — 셸과 동일 스타일) */
+.eos-modal-x {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex: none;
+}
+.eos-modal-x:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+.eos-modal-x svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
