@@ -9,6 +9,17 @@
 .bg-white {
   background-color: var(--surface-3);
 }
+
+/* 라이트 테마: eos-view/eos-ctrl 내 차트 카드(bg-white.shadow-sm)를 투명하게 →
+   배경 그라데이션과 동화. 모달/팝오버(shadow-lg, shadow-xl, shadow-2xl)는 유지. */
+:root[data-theme='light'] :where(.kb-scope .eos-view, .kb-scope .eos-ctrl) .bg-white.shadow-sm {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+/* 라이트 테마: 컨트롤 패널 외부 컨테이너(shadow 없는 bg-white)도 투명화 */
+:root[data-theme='light'] .kb-scope .eos-ctrl .bg-white:not(.shadow-sm):not(.shadow-lg):not(.shadow-xl) {
+  background-color: transparent !important;
+}
 .hover\:bg-white:hover {
   background-color: var(--surface-3);
 }

@@ -37,6 +37,9 @@
   --yellow: #f5b85c;
   --yellow-dim: rgba(245, 184, 92, 0.14);
 
+  --hdr-bg: rgba(11, 15, 25, 0.55);
+  --card-bg: rgba(255, 255, 255, 0.025);
+
   --r-sm: 8px;
   --r-md: 12px;
   --r-lg: 16px;
@@ -73,6 +76,9 @@
   --red-dim: rgba(251, 107, 124, 0.12);
   --green-dim: rgba(45, 212, 191, 0.14);
   --yellow-dim: rgba(245, 184, 92, 0.16);
+
+  --hdr-bg: rgba(255, 255, 255, 0.72);
+  --card-bg: transparent;
 
   --shadow: 0 18px 44px -22px rgba(20, 30, 55, 0.28);
 }
@@ -394,12 +400,9 @@ body.eos-body {
   padding: 0 22px;
   flex: none;
   border-bottom: 1px solid var(--border);
-  background: rgba(11, 15, 25, 0.55);
+  background: var(--hdr-bg);
   backdrop-filter: blur(14px);
   z-index: 30;
-}
-:root[data-theme='light'] .eos-hdr {
-  background: rgba(255, 255, 255, 0.62);
 }
 .eos-crumb {
   display: flex;

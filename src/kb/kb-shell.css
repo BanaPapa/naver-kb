@@ -313,7 +313,7 @@
   padding: 0 22px;
   flex: none;
   border-bottom: 1px solid var(--border);
-  background: rgba(11, 15, 25, 0.55);
+  background: var(--hdr-bg);
   backdrop-filter: blur(14px);
   z-index: 30;
 }

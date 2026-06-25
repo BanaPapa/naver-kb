@@ -381,7 +381,7 @@ export const MonthlyRegionCascade: React.FC = () => {
             {selectedRegions.map((region, idx) => (
               <div
                 key={region}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-100 bg-gray-50 text-sm"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 bg-gray-100 text-sm"
               >
                 <span
                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"
@@ -390,10 +390,12 @@ export const MonthlyRegionCascade: React.FC = () => {
                 <span className="text-gray-700 truncate">{regionLabels[region] ?? region}</span>
                 <button
                   onClick={() => removeRegion(region)}
-                  className="ml-auto text-gray-400 hover:text-red-500 leading-none text-base"
+                  className="ml-auto flex-none w-5 h-5 flex items-center justify-center rounded text-gray-500 hover:text-gray-800 hover:bg-gray-200 transition-colors"
                   aria-label={`${regionLabels[region] ?? region} 제거`}
                 >
-                  ×
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                    <path d="M1 1l8 8M9 1L1 9"/>
+                  </svg>
                 </button>
               </div>
             ))}
