@@ -381,7 +381,7 @@ export const RegionSelector: React.FC = () => {
         <button
           onClick={loadWeeklyData}
           disabled={selectedRegions.length === 0 || dataLoading}
-          className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white disabled:text-gray-400 text-sm font-semibold rounded-lg transition-colors"
+          className="w-full py-3 bg-rose-400 hover:bg-rose-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-white disabled:text-gray-500 text-base font-semibold rounded-lg transition-colors"
         >
           {dataLoading ? '로딩 중...' : '비교하기'}
         </button>

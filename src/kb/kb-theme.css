@@ -99,6 +99,22 @@
   outline-offset: 2px;
 }
 
+/* Select/option 배경: 테마 변수 사용 (라이트 테마에서 흰색이 아닌 배경) */
+:where(.kb-scope, .kb-portal) select,
+:where(.kb-scope, .kb-portal) input {
+  background-color: var(--surface-3) !important;
+  color: var(--fg) !important;
+}
+:where(.kb-scope, .kb-portal) select option {
+  background-color: var(--surface-3);
+  color: var(--fg);
+}
+/* 라이트 테마: option 배경을 페이지 배경과 조화되도록 조정 */
+:root[data-theme='light'] :where(.kb-scope, .kb-portal) select option {
+  background-color: #f8f9fa;
+  color: #1f2937;
+}
+
 /* 닫기 버튼 (아이콘형 — 셸과 동일 스타일) */
 .eos-modal-x {
   display: grid;

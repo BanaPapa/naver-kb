@@ -742,6 +742,15 @@ body.eos-body {
   transform: translateY(-1px);
   box-shadow: 0 8px 22px -8px rgba(45, 212, 191, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
+/* 라이트 테마: 분석 버튼이 배경과 대비되도록 어두운 배경에 높은 명도 유지 */
+:root[data-theme='light'] .eos-btn-primary {
+  background: var(--teal);
+  color: #0d1117;
+  box-shadow: 0 2px 12px -6px rgba(45, 212, 191, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+:root[data-theme='light'] .eos-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 4px 16px -6px rgba(45, 212, 191, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
 .eos-btn-primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
