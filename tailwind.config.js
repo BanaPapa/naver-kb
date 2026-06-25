@@ -52,6 +52,10 @@ export default {
           800: 'var(--blue)',
           900: 'var(--blue)',
         },
+        rose: {
+          400: '#f9637e',
+          500: '#f75e7a',
+        },
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
