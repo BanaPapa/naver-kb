@@ -452,35 +452,35 @@ export const MetricChart: React.FC<MetricChartProps> = ({
       <div className="min-h-0 flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }} syncId={syncId}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             {referenceValue != null && (
               <>
-                <ReferenceArea y1={referenceValue} y2={100000} fill="#22c55e" fillOpacity={0.05} ifOverflow="hidden" />
-                <ReferenceArea y1={-100000} y2={referenceValue} fill="#ef4444" fillOpacity={0.05} ifOverflow="hidden" />
-                <ReferenceLine y={referenceValue} stroke="#9ca3af" strokeDasharray="4 4" strokeWidth={1} ifOverflow="hidden" />
+                <ReferenceArea y1={referenceValue} y2={100000} fill="var(--green)" fillOpacity={0.05} ifOverflow="hidden" />
+                <ReferenceArea y1={-100000} y2={referenceValue} fill="var(--red)" fillOpacity={0.05} ifOverflow="hidden" />
+                <ReferenceLine y={referenceValue} stroke="var(--muted-2)" strokeDasharray="4 4" strokeWidth={1} ifOverflow="hidden" />
               </>
             )}
             {baseLineActive && (
               <ReferenceLine
                 x={baseLineDate}
-                stroke="#94a3b8"
+                stroke="var(--muted)"
                 strokeWidth={1}
                 strokeDasharray="3 3"
                 ifOverflow="extendDomain"
-                label={{ value: '기준', position: 'insideTopLeft', fontSize: 9, fill: '#94a3b8' }}
+                label={{ value: '기준', position: 'insideTopLeft', fontSize: 9, fill: 'var(--muted)' }}
               />
             )}
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 10, fill: '#94a3b8' }}
+              tick={{ fontSize: 10, fill: 'var(--muted)' }}
               ticks={quarterTicks}
               tickFormatter={formatQuarter}
               interval={0}
-              axisLine={{ stroke: '#e2e8f0' }}
+              axisLine={{ stroke: 'var(--border)' }}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 10, fill: '#94a3b8' }}
+              tick={{ fontSize: 10, fill: 'var(--muted)' }}
               axisLine={false}
               tickLine={false}
               domain={yDomain ?? ['auto', 'auto']}
@@ -526,7 +526,7 @@ export const BrushTraveller = (props: { x?: number; y?: number; width?: number; 
   const r = height / 2 + 0.5;
   return (
     <g style={{ cursor: 'pointer' }}>
-      <circle cx={cx} cy={cy} r={r} fill="#ffffff" stroke="#2563eb" strokeWidth={1.75} />
+      <circle cx={cx} cy={cy} r={r} fill="var(--raise)" stroke="var(--blue)" strokeWidth={1.75} />
     </g>
   );
 };
@@ -580,8 +580,8 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
               onChange={onBrushChange}
               travellerWidth={9}
               traveller={<BrushTraveller />}
-              stroke="#bfdbfe"
-              fill="#eff6ff"
+              stroke="var(--blue-dim)"
+              fill="var(--blue-dim)"
               tickFormatter={formatDate}
             />
           </LineChart>

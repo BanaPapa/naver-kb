@@ -100,8 +100,8 @@ export const PeriodSlider: React.FC<PeriodSliderProps> = props => {
               onChange={handleBrushChange}
               travellerWidth={10}
               traveller={<BrushTraveller />}
-              stroke="#cbd5e1"
-              fill="#93c5fd"
+              stroke="var(--border-2)"
+              fill="var(--blue)"
               tickFormatter={() => ''}
             />
           </LineChart>

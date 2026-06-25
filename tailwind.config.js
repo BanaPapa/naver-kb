@@ -24,7 +24,34 @@ export default {
           2: '#ef4444',
           3: '#10b981',
           4: '#f59e0b',
-        }
+        },
+        // KB 모듈(.kb-scope)이 쓰는 Tailwind 회색/파랑을 Estate OS 테마 토큰으로 매핑한다.
+        // 토큰은 :root[data-theme] 로 flip되므로 라이트/다크 전환을 자동으로 따라가고,
+        // hover/focus 등 모든 변형 유틸에도 적용된다. (매물시세는 Tailwind 색을 쓰지 않아 무영향)
+        gray: {
+          50: 'var(--surface)',
+          100: 'var(--surface-2)',
+          200: 'var(--border)',
+          300: 'var(--border-2)',
+          400: 'var(--muted-2)',
+          500: 'var(--muted)',
+          600: 'var(--fg-2)',
+          700: 'var(--fg-2)',
+          800: 'var(--fg)',
+          900: 'var(--fg)',
+        },
+        blue: {
+          50: 'var(--blue-dim)',
+          100: 'var(--blue-dim)',
+          200: 'var(--blue-dim)',
+          300: 'var(--blue)',
+          400: 'var(--blue)',
+          500: 'var(--blue)',
+          600: 'var(--blue)',
+          700: 'var(--blue)',
+          800: 'var(--blue)',
+          900: 'var(--blue)',
+        },
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

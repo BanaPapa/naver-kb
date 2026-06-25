@@ -6,6 +6,7 @@ import './index.css';
 // kb-shell.css는 .kb-scope 로 한정되어 naver 화면에 영향 없음.
 import './kb/kb-shell.css';
 import './kb/kb-tailwind.css';
+import './kb/kb-theme.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

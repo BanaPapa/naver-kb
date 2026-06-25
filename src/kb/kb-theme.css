@@ -1,0 +1,11 @@
+/* KB 콘텐츠 테마 보정.
+   gray/blue 계열 Tailwind 색은 tailwind.config.js 에서 Estate OS 토큰으로 매핑되어
+   라이트/다크를 자동으로 따라간다. 여기서는 고정 흰색 표면(bg-white)만
+   표면 토큰(--surface-3: 라이트=#fff / 다크=#141b2b)으로 바꿔 테마를 따라가게 한다.
+   .kb-scope 한정이라 매물시세에는 영향이 없다. */
+.kb-scope .bg-white {
+  background-color: var(--surface-3);
+}
+.kb-scope .hover\:bg-white:hover {
+  background-color: var(--surface-3);
+}

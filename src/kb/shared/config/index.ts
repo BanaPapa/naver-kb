@@ -2,12 +2,13 @@ export * from './chart-options';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
+// Estate OS 팔레트에 맞춘 차트 시리즈 색상(토큰 값과 동일 계열).
 export const CHART_COLORS = [
-  '#3b82f6', // blue
-  '#ef4444', // red
-  '#10b981', // green
-  '#f59e0b', // amber
-  '#8b5cf6', // purple
+  '#4f8dff', // blue   (--blue)
+  '#fb6b7c', // red    (--red)
+  '#2dd4bf', // teal   (--teal/--green)
+  '#f5b85c', // amber  (--amber)
+  '#a78bfa', // purple (--purple)
 ];
 
 export const MAX_REGIONS = 5;
