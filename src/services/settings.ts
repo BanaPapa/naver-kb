@@ -81,6 +81,35 @@ export function saveSettings(settings: AppSettings): void {
   }
 }
 
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const normalized = hex.trim().replace(/^#/, '');
+  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return null;
+  const value = Number.parseInt(normalized, 16);
+  return {
+    r: (value >> 16) & 255,
+    g: (value >> 8) & 255,
+    b: value & 255,
+  };
+}
+
+function relativeLuminance({ r, g, b }: { r: number; g: number; b: number }): number {
+  const toLinear = (channel: number) => {
+    const s = channel / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  const [rs, gs, bs] = [toLinear(r), toLinear(g), toLinear(b)];
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+function contrastTextFor(hex: string): '#0b0f19' | '#ffffff' {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return '#ffffff';
+  const luminance = relativeLuminance(rgb);
+  const contrastWithDark = (luminance + 0.05) / 0.05;
+  const contrastWithWhite = 1.05 / (luminance + 0.05);
+  return contrastWithDark >= contrastWithWhite ? '#0b0f19' : '#ffffff';
+}
+
 // 설정을 CSS 변수/데이터 속성으로 문서에 반영
 export function applySettings(settings: AppSettings): void {
   const root = document.documentElement;
@@ -91,6 +120,7 @@ export function applySettings(settings: AppSettings): void {
   // 강조색(--blue) + 파생 dim 컬러를 덮어써 액티브/하이라이트 전반에 반영
   root.style.setProperty('--blue', accent);
   root.style.setProperty('--blue-dim', `color-mix(in srgb, ${accent} 16%, transparent)`);
+  root.style.setProperty('--blue-contrast', contrastTextFor(accent));
 
   const font = FONT_OPTIONS.find((f) => f.key === settings.fontFamily) ?? FONT_OPTIONS[0];
   root.style.setProperty('--font', font.stack);

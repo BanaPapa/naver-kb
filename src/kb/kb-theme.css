@@ -24,6 +24,21 @@
   background-color: var(--surface-3);
 }
 
+/* KB primary action buttons that must follow Settings > Theme & Color. */
+:where(.kb-scope, .kb-portal) .kb-accent-button {
+  background: var(--blue);
+  color: var(--blue-contrast, #fff);
+  box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--blue) 70%, transparent);
+}
+:where(.kb-scope, .kb-portal) .kb-accent-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--blue) 88%, #fff 12%);
+}
+:where(.kb-scope, .kb-portal) .kb-accent-button:disabled {
+  background: var(--border-2);
+  color: var(--muted-2);
+  box-shadow: none;
+}
+
 /* Tailwind preflight 를 비활성화(매물시세 바닐라 CSS 보호)했기 때문에 브라우저 기본
    폼 요소 배경(버튼 #f0f0f0 등)이 남아 다크 테마에서 연회색으로 보인다.
    KB 콘텐츠(.kb-scope)와 KB 모달(.kb-portal) 내부의 폼 요소 기본 배경만 리셋한다.

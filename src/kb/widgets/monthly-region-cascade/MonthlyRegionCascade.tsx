@@ -405,7 +405,7 @@ export const MonthlyRegionCascade: React.FC = () => {
         <button
           onClick={loadPriceData}
           disabled={selectedRegions.length === 0 || priceLoading}
-          className="w-full py-3 bg-rose-400 hover:bg-rose-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-white disabled:text-gray-500 text-base font-semibold rounded-lg transition-colors"
+          className="kb-accent-button w-full py-3 disabled:cursor-not-allowed text-base font-semibold rounded-lg transition-colors"
         >
           {priceLoading ? '로딩 중...' : '비교하기'}
         </button>
