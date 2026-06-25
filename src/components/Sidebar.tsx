@@ -12,7 +12,7 @@ interface NavModule {
   tab?: AppTab; // 클릭 가능한 모듈만 지정 (없으면 개발 중)
   label: string;
   status: ModStatus;
-  icon: JSX.Element;
+  icon: React.JSX.Element;
 }
 
 // 사이드바 모듈(탭) 정의. 현재 개발 중인 앱은 '매물시세'(naver)뿐이며 나머지는 비활성(개발 예정).
