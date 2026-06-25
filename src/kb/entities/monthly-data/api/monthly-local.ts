@@ -13,8 +13,7 @@ import type {
   MonthlyPriceRegion,
   MonthlyMarketRegion,
 } from '../model/monthly-data.types';
-
-const JSON_URL = '/data/kb-monthly.json';
+import { loadKbJson } from '../../../shared/lib/kb-source/loader';
 
 interface RegionMeta {
   regionPath: string;
@@ -117,11 +116,7 @@ function index(json: KBMonthlyJson): Loaded {
 async function ensureLoaded(): Promise<Loaded> {
   if (cache) return cache;
   if (!loadPromise) {
-    loadPromise = fetch(JSON_URL, { cache: 'no-cache' })
-      .then(r => {
-        if (!r.ok) throw new Error(`월간 데이터 로드 실패: HTTP ${r.status}`);
-        return r.json() as Promise<KBMonthlyJson>;
-      })
+    loadPromise = loadKbJson<KBMonthlyJson>('monthly')
       .then(json => {
         cache = index(json);
         return cache;

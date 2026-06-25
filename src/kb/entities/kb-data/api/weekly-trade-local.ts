@@ -2,8 +2,8 @@
 // 매수우위·매매거래활발·전세수급·전세거래활발 4개 지표(대지역/집계 24곳, 2003~).
 // 시세지표(weekly-local.ts)와 날짜 축이 달라(2003 vs 2008) 별도 파일로 둔다.
 import type { WeeklyDataRow } from '../model/kb-data.types';
+import { loadKbJson } from '../../../shared/lib/kb-source/loader';
 
-const JSON_URL = '/data/kb-weekly-trade.json';
 const TRADE_METRIC_KEYS = ['buyerAdvantage', 'saleActivity', 'jeonseSupply', 'jeonseActivity'] as const;
 
 interface KBTradeJson {
@@ -17,11 +17,7 @@ let loadPromise: Promise<KBTradeJson> | null = null;
 async function ensureLoaded(): Promise<KBTradeJson> {
   if (cache) return cache;
   if (!loadPromise) {
-    loadPromise = fetch(JSON_URL, { cache: 'no-cache' })
-      .then(r => {
-        if (!r.ok) throw new Error(`거래지표 데이터 로드 실패: HTTP ${r.status}`);
-        return r.json() as Promise<KBTradeJson>;
-      })
+    loadPromise = loadKbJson<KBTradeJson>('weekly-trade')
       .then(json => {
         cache = json;
         return json;

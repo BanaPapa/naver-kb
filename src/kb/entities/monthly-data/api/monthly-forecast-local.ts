@@ -2,8 +2,8 @@
 // KB부동산 매매/전세 가격 전망지수(0~200 확산지수, 100 중립). 대지역/집계 24곳만 제공.
 // 시장지표 탭의 중간행에서 사용하며, 중지역 선택 시 대지역(시도)으로 폴백해 표현한다.
 import type { MonthlyForecastRegion, TimeseriesPoint } from '../model/monthly-data.types';
+import { loadKbJson } from '../../../shared/lib/kb-source/loader';
 
-const JSON_URL = '/data/kb-monthly-forecast.json';
 const FORECAST_METRIC_KEYS = ['saleForecast', 'jeonseForecast'] as const;
 
 interface KBForecastJson {
@@ -17,11 +17,7 @@ let loadPromise: Promise<KBForecastJson> | null = null;
 async function ensureLoaded(): Promise<KBForecastJson> {
   if (cache) return cache;
   if (!loadPromise) {
-    loadPromise = fetch(JSON_URL, { cache: 'no-cache' })
-      .then(r => {
-        if (!r.ok) throw new Error(`월간 전망지표 데이터 로드 실패: HTTP ${r.status}`);
-        return r.json() as Promise<KBForecastJson>;
-      })
+    loadPromise = loadKbJson<KBForecastJson>('monthly-forecast')
       .then(json => {
         cache = json;
         return json;

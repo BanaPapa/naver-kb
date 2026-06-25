@@ -3,8 +3,8 @@
 // 주간 거래지표(weekly-trade-local.ts)와 완전히 동일한 구조이며, 소스가 월간 시계열인 점만 다르다.
 // 시세지표(monthly-local.ts)와 날짜축(YYYY-MM)이 달라 별도 파일로 둔다.
 import type { WeeklyDataRow } from '../../kb-data';
+import { loadKbJson } from '../../../shared/lib/kb-source/loader';
 
-const JSON_URL = '/data/kb-monthly-trade.json';
 const TRADE_METRIC_KEYS = ['buyerAdvantage', 'saleActivity', 'jeonseSupply', 'jeonseActivity'] as const;
 
 interface KBTradeJson {
@@ -18,11 +18,7 @@ let loadPromise: Promise<KBTradeJson> | null = null;
 async function ensureLoaded(): Promise<KBTradeJson> {
   if (cache) return cache;
   if (!loadPromise) {
-    loadPromise = fetch(JSON_URL, { cache: 'no-cache' })
-      .then(r => {
-        if (!r.ok) throw new Error(`월간 거래지표 데이터 로드 실패: HTTP ${r.status}`);
-        return r.json() as Promise<KBTradeJson>;
-      })
+    loadPromise = loadKbJson<KBTradeJson>('monthly-trade')
       .then(json => {
         cache = json;
         return json;
