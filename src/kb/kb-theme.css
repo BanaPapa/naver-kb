@@ -12,3 +12,18 @@
 .hover\:bg-white:hover {
   background-color: var(--surface-3);
 }
+
+/* Tailwind preflight 를 비활성화(매물시세 바닐라 CSS 보호)했기 때문에 브라우저 기본
+   폼 요소 배경(버튼 #f0f0f0 등)이 남아 다크 테마에서 연회색으로 보인다.
+   KB 콘텐츠(.kb-scope)와 KB 모달(.kb-portal) 내부의 폼 요소 기본 배경만 리셋한다.
+   :where() 로 감싸 specificity 를 0 으로 만들어, bg-blue-600 등 Tailwind 색 유틸이
+   항상 우선되도록 한다(스코프만 제공, 우선순위는 차지하지 않음). 매물시세는 무영향. */
+:where(.kb-scope, .kb-portal) button,
+:where(.kb-scope, .kb-portal) select,
+:where(.kb-scope, .kb-portal) input,
+:where(.kb-scope, .kb-portal) textarea {
+  background-color: transparent;
+  background-image: none;
+  color: inherit;
+  font: inherit;
+}
