@@ -3,8 +3,8 @@
 // 메모리에 캐싱하고, 기존 백엔드 API와 동일한 형태로 제공한다.
 // 추후 Supabase 연결 시 이 모듈만 교체하면 된다.
 import type { WeeklyDataRow, CollectionStatus } from '../model/kb-data.types';
+import { loadKbJson } from '../../../shared/lib/kb-source/loader';
 
-const JSON_URL = '/data/kb-weekly.json';
 const WEEKLY_METRIC_KEYS = ['saleIndex', 'jeonseIndex', 'saleChange', 'jeonseChange'] as const;
 
 interface KBWeeklyJson {
@@ -18,12 +18,7 @@ let loadPromise: Promise<KBWeeklyJson> | null = null;
 async function ensureLoaded(): Promise<KBWeeklyJson> {
   if (cache) return cache;
   if (!loadPromise) {
-    // cache: 'no-cache' — 데이터 재빌드 시 옛 JSON이 브라우저 캐시로 남지 않도록 항상 재검증
-    loadPromise = fetch(JSON_URL, { cache: 'no-cache' })
-      .then(r => {
-        if (!r.ok) throw new Error(`주간 데이터 로드 실패: HTTP ${r.status}`);
-        return r.json() as Promise<KBWeeklyJson>;
-      })
+    loadPromise = loadKbJson<KBWeeklyJson>('weekly')
       .then(json => {
         cache = json;
         return json;

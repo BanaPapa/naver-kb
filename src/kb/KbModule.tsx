@@ -12,6 +12,7 @@ import { useMonthlyStore, type ViewMode, type WeeklyTab } from './shared/lib/mon
 import { AnalysisModal } from './features/analysis';
 import { SlotControls } from './features/chart-slots';
 import { ExportButton } from './features/data-export';
+import { DataUpdateModal } from './features/data-update';
 
 // KB 시계열 분석 모듈 — 통합 셸(naver-kb)의 'KB 시계열 분석' 탭에서 렌더된다.
 // 원본 KB 앱의 App.tsx에서 좌측 사이드바(AppNav)와 eos-app 래퍼를 제거하고
@@ -172,6 +173,7 @@ const KbModule: FC = () => {
         </div>
 
         <AnalysisModal open={analysisOpen} onClose={() => setAnalysisOpen(false)} />
+        <DataUpdateModal />
       </div>
     </StoreProvider>
   );
