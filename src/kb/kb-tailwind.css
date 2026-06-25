@@ -1,0 +1,7 @@
+/* KB 모듈용 Tailwind 진입점.
+   preflight(전역 리셋)는 tailwind.config.js에서 비활성화되어 있어
+   매물시세(naver) 바닐라 다크테마에는 영향이 없다. 유틸리티는
+   클래스를 실제 사용하는 KB 컴포넌트에만 적용된다. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

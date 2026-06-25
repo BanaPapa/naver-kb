@@ -14,6 +14,7 @@ import { useAgentStatus } from './hooks/useAgentStatus';
 import { useInquiries } from './hooks/useInquiries';
 import { InquiryModal } from './components/inquiry/InquiryModal';
 import { useAdminInbox } from './hooks/useAdminInbox';
+import KbModule from './kb/KbModule';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('naver');
@@ -30,8 +31,14 @@ export default function App() {
 
   const isSettings = activeTab === 'settings';
   const isAdminTab = activeTab === 'admin';
+  const isKb = activeTab === 'kb';
   const isAdmin = auth.profile?.role === 'admin' && auth.profile?.status === 'approved';
   const adminInbox = useAdminInbox(isAdmin);
+
+  // KB 시계열 분석 모듈은 첫 진입 후부터 마운트 유지(상태 보존). 진입 전에는
+  // KB 데이터/차트를 미리 로드하지 않도록 지연 마운트한다.
+  const [kbSeen, setKbSeen] = useState(false);
+  if (isKb && !kbSeen) setKbSeen(true);
 
   // Supabase가 설정된 경우에만 로그인/승인 게이트 적용. 미설정이면 기존처럼 바로 사용.
   // 비밀번호 재설정 링크로 진입 → 다른 모든 게이트보다 우선해 새 비밀번호 화면 표시.
@@ -95,6 +102,8 @@ export default function App() {
       />
 
       <div className="eos-main">
+        {/* KB 탭은 자체 헤더(KbModule 내부)를 렌더하므로 호스트 헤더는 숨긴다. */}
+        {!isKb && (
         <header className="eos-hdr">
           <div className="eos-crumb">
             <svg className="home" viewBox="0 0 24 24">
@@ -125,12 +134,22 @@ export default function App() {
             </div>
           )}
         </header>
+        )}
 
         {/* 매물시세 탭은 항상 마운트 상태로 두고 다른 탭일 때만 숨긴다.
             (언마운트하면 단위/지역/필터 등 로컬 선택 상태가 초기화되는 문제 방지) */}
-        <div style={{ display: isSettings || isAdminTab ? 'none' : 'contents' }}>
+        <div style={{ display: isSettings || isAdminTab || isKb ? 'none' : 'contents' }}>
           <NaverCrawlerTab crawler={crawler} slots={slots} session={auth.session} agentStatus={agentStatus} isAdmin={isAdmin} onRequestInquiry={openInquiry} />
         </div>
+
+        {/* KB 시계열 분석 — 첫 진입 후 마운트 유지, KB 탭일 때만 표시.
+            KbModule은 .kb-scope(display:contents) 래퍼로 자체 헤더+작업영역을
+            호스트 eos-main 레이아웃에 그대로 흘려보낸다. */}
+        {kbSeen && (
+          <div style={{ display: isKb ? 'contents' : 'none' }}>
+            <KbModule />
+          </div>
+        )}
         {isAdminTab && isAdmin && (
           <MemberApproval unreadUserIds={adminInbox.unreadUserIds} onThreadRead={adminInbox.reload} />
         )}

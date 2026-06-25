@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react';
 // @ts-expect-error — .mjs Node 모듈 (개발 서버 전용, 타입 선언 없음)
 import { getNaverLandToken } from './server/naverTokenProvider.mjs';
 import { issueCrawlToken } from './lib/crawlTokenCore';
+// KB 시계열 분석 모듈의 AI 분석 백엔드(개발 서버 전용 브릿지).
+import { analysisBridge } from './vite-plugins/analysis-bridge';
+import { providerBridge } from './vite-plugins/provider-bridge';
 
 // 로컬 개발용 /api/crawl-token 미들웨어.
 // Vercel 서버리스 함수 api/crawl-token.ts는 vite dev에서 서빙되지 않으므로,
@@ -71,7 +74,7 @@ export default defineConfig(({ mode }) => {
   // 접두사 없는 변수까지 모두 로드(CRAWL_TOKEN_SECRET 등). 세 번째 인자 '' = 전체.
   const env = loadEnv(mode, process.cwd(), '');
   return {
-  plugins: [react(), naverTokenInjector(), crawlTokenDevApi(env)],
+  plugins: [react(), naverTokenInjector(), crawlTokenDevApi(env), analysisBridge(), providerBridge()],
   server: {
     port: 5174,
     proxy: {

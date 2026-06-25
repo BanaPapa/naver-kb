@@ -15,7 +15,7 @@ type SettingsSection = 'theme' | 'display' | 'auth';
 interface SectionDef {
   key: SettingsSection;
   label: string;
-  icon: JSX.Element;
+  icon: React.JSX.Element;
 }
 
 // 설정 서브 네비게이션 — 좌측 모듈 네비와 역할이 다른 '설정 도메인' 전환.
