@@ -4,6 +4,7 @@ import { FilterSelect, AreaMode } from './FilterSelect';
 import { ConfirmModal } from './ConfirmModal';
 import { RegionSelection, SPACE_OPTIONS, isExclusiveSpaceType } from '../types';
 import { CrawlerStatus } from '../hooks/useCrawler';
+import { getAdminRoleTip, useAdminUi } from './admin-ui';
 
 const PYEONG_TO_SQM = 3.30579;
 
@@ -40,6 +41,7 @@ interface SearchPanelProps {
 }
 
 export function SearchPanel({ status, onStart, onStop, onToggleCollapse }: SearchPanelProps) {
+  const { isAdmin } = useAdminUi();
   const [region, setRegion] = useState<RegionSelection>({
     large: null,
     mid: null,
@@ -215,17 +217,20 @@ export function SearchPanel({ status, onStart, onStop, onToggleCollapse }: Searc
 
         <div className="run-btn-wrap">
           {!isRunning ? (
-            <button className="eos-run-btn" onClick={handleStart} disabled={!region.large}>
-              <svg viewBox="0 0 24 24">
-                <path d="M5 3l14 9-14 9z" />
-              </svg>
+            <button
+              className="eos-run-btn ctrl-button-2"
+              onClick={handleStart}
+              disabled={!region.large}
+              data-admin-role-tip={getAdminRoleTip(isAdmin, '버튼2', '데이터 수집 실행')}
+            >
               데이터 수집 실행
             </button>
           ) : (
-            <button className="eos-run-btn stop" onClick={onStop}>
-              <svg viewBox="0 0 24 24">
-                <rect x="6" y="6" width="12" height="12" rx="1.5" />
-              </svg>
+            <button
+              className="eos-run-btn stop ctrl-button-2"
+              onClick={onStop}
+              data-admin-role-tip={getAdminRoleTip(isAdmin, '버튼2', '수집 중지')}
+            >
               수집 중지
             </button>
           )}

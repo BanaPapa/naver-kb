@@ -15,6 +15,7 @@ import { useInquiries } from './hooks/useInquiries';
 import { InquiryModal } from './components/inquiry/InquiryModal';
 import { useAdminInbox } from './hooks/useAdminInbox';
 import KbModule from './kb/KbModule';
+import { AdminUiProvider } from './components/admin-ui';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('naver');
@@ -87,6 +88,7 @@ export default function App() {
   };
 
   return (
+    <AdminUiProvider isAdmin={isAdmin}>
     <div className={`eos-app${sideCollapsed ? ' side-collapsed' : ''}`}>
       <Sidebar
         activeTab={activeTab}
@@ -167,5 +169,6 @@ export default function App() {
         />
       )}
     </div>
+    </AdminUiProvider>
   );
 }

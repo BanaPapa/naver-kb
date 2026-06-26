@@ -2151,10 +2151,64 @@ input[type='range'].space-range:disabled {
 }
 .ctrl-button-2,
 :where(.kb-scope .eos-ctrl) .kb-accent-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1.2 !important;
   font-family: var(--ctrl-button2-font) !important;
   font-size: var(--ctrl-button2-size) !important;
   font-weight: var(--ctrl-button2-weight) !important;
   color: var(--ctrl-button2-color) !important;
+}
+:root[data-theme='light'] .ctrl-button-2,
+:root[data-theme='light'] :where(.kb-scope .eos-ctrl) .kb-accent-button {
+  color: #ffffff !important;
+}
+.ctrl-title-edit {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--blue);
+  color: var(--ctrl-title-color);
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  padding: 1px 6px;
+  outline: none;
+}
+[data-admin-role-tip] {
+  position: relative;
+}
+[data-admin-role-tip]::after {
+  content: attr(data-admin-role-tip);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 7px);
+  z-index: 2000;
+  max-width: 280px;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 88%, #000 12%);
+  color: #ffffff;
+  border: 1px solid var(--border-2);
+  box-shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.65);
+  font-family: var(--font);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: normal;
+  opacity: 0;
+  transform: translateY(2px);
+  pointer-events: none;
+  transition: opacity 0.12s var(--ease), transform 0.12s var(--ease);
+}
+[data-admin-role-tip]:hover::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ============================================================

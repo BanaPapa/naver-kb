@@ -182,10 +182,14 @@ export function applySettings(settings: AppSettings): void {
   const setControlTextVars = (role: ControlTextRole, prefix: string) => {
     const style = settings.controlText[role] ?? DEFAULT_SETTINGS.controlText[role];
     const roleFont = FONT_OPTIONS.find((f) => f.key === style.fontFamily) ?? font;
+    const roleColor =
+      role === 'button2' && settings.themeMode === 'light'
+        ? '#ffffff'
+        : style.color;
     root.style.setProperty(`--ctrl-${prefix}-size`, `${style.fontSize}px`);
     root.style.setProperty(`--ctrl-${prefix}-font`, roleFont.stack);
     root.style.setProperty(`--ctrl-${prefix}-weight`, String(style.fontWeight));
-    root.style.setProperty(`--ctrl-${prefix}-color`, style.color);
+    root.style.setProperty(`--ctrl-${prefix}-color`, roleColor);
   };
 
   setControlTextVars('title', 'title');
