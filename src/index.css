@@ -2194,10 +2194,10 @@ input[type='range'].space-range:disabled {
   max-width: 560px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--bg) 94%, #000 6%);
-  color: #fff;
-  border: 1px solid var(--border-2);
-  box-shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.65);
+  background: #111827;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 14px 34px -12px rgba(15, 23, 42, 0.58);
   font-family: var(--font);
   font-size: 12px;
   font-weight: 800;
@@ -2209,6 +2209,12 @@ input[type='range'].space-range:disabled {
   transform: translateY(2px);
   pointer-events: none;
   transition: opacity 0.12s var(--ease), transform 0.12s var(--ease);
+}
+:root[data-theme='light'] [data-admin-role-tip]::after {
+  background: #111827;
+  color: #ffffff;
+  border-color: rgba(15, 23, 42, 0.22);
+  box-shadow: 0 16px 38px -14px rgba(15, 23, 42, 0.52);
 }
 [data-admin-role-tip]:hover::after {
   opacity: 1;
