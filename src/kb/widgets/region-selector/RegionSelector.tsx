@@ -167,7 +167,7 @@ export const RegionSelector: React.FC = () => {
 
       <div className="border-t border-gray-100" />
 
-      <section className="ctrl-section min-h-[8.5rem] pt-6">
+      <section className="ctrl-section min-h-[8.5rem]" style={{ paddingTop: 'var(--ctrl-section-gap)' }}>
         {!isTrade && (
           <>
             <div className="mb-3 flex items-center justify-between">
@@ -235,7 +235,7 @@ export const RegionSelector: React.FC = () => {
       <div className="border-t border-gray-100" />
 
       {/* Cascading region selector */}
-      <section className="ctrl-section pt-6 flex flex-col gap-3 border-b border-gray-100">
+      <section className="ctrl-section flex flex-col gap-3 border-b border-gray-100" style={{ paddingTop: 'var(--ctrl-section-gap)' }}>
         <div className="flex items-center justify-between">
           <h2 className="ctrl-section-title">지역 선택</h2>
           {selectedRegions.length > 0 && (
