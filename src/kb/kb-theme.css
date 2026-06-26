@@ -288,6 +288,7 @@
   font-family: var(--ctrl-title-font) !important;
   font-size: var(--ctrl-title-size) !important;
   font-weight: var(--ctrl-title-weight) !important;
+  line-height: var(--ctrl-title-line) !important;
   color: var(--ctrl-title-color) !important;
 }
 :where(.kb-scope .eos-ctrl) select,

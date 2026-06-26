@@ -53,6 +53,7 @@
   --ctrl-title-font: var(--font);
   --ctrl-title-weight: 700;
   --ctrl-title-color: var(--fg);
+  --ctrl-title-line: calc(var(--ctrl-title-size) * 1.428571);
   --ctrl-item-size: 16px;
   --ctrl-item-font: var(--font);
   --ctrl-item-weight: 600;
@@ -1702,6 +1703,7 @@ body {
   font-family: var(--ctrl-title-font);
   font-size: var(--ctrl-title-size);
   font-weight: var(--ctrl-title-weight);
+  line-height: var(--ctrl-title-line);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ctrl-title-color);
@@ -2047,6 +2049,7 @@ input[type='range'].space-range:disabled {
   font-family: var(--ctrl-title-font) !important;
   font-size: var(--ctrl-title-size) !important;
   font-weight: var(--ctrl-title-weight) !important;
+  line-height: var(--ctrl-title-line) !important;
   color: var(--ctrl-title-color) !important;
 }
 .ctrl-item,
