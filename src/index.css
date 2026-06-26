@@ -55,7 +55,7 @@
   --ctrl-title-color: var(--fg);
   --ctrl-title-line: calc(var(--ctrl-title-size) * 1.428571);
   --ctrl-title-content-gap: calc(var(--ctrl-title-line) * 0.5);
-  --ctrl-section-gap: calc(var(--ctrl-title-line) * 3);
+  --ctrl-section-gap: calc(var(--ctrl-title-line) * 2);
   --ctrl-item-size: 16px;
   --ctrl-item-font: var(--font);
   --ctrl-item-weight: 600;
