@@ -24,11 +24,7 @@ export function useAdminUi() {
   return useContext(AdminUiContext);
 }
 
-export function getAdminRoleTip(isAdmin: boolean, role: string, detail?: React.ReactNode) {
+export function getAdminRoleTip(isAdmin: boolean, role: string, _detail?: React.ReactNode) {
   if (!isAdmin) return undefined;
-  const text =
-    typeof detail === 'string' || typeof detail === 'number'
-      ? String(detail).trim()
-      : '';
-  return text ? `${role}, ${text}` : role;
+  return role;
 }

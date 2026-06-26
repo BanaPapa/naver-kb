@@ -168,6 +168,7 @@ export function ControlButton({
   variant = 'secondary',
   className = '',
   children,
+  title,
   ...props
 }: ControlButtonProps) {
   const { isAdmin } = useAdminUi();
@@ -176,7 +177,8 @@ export function ControlButton({
   return (
     <button
       className={`${variantClass} ${className}`.trim()}
-      data-admin-role-tip={getAdminRoleTip(isAdmin, roleLabel, props.title ?? children)}
+      data-admin-role-tip={getAdminRoleTip(isAdmin, roleLabel, title ?? children)}
+      title={isAdmin ? undefined : title}
       {...props}
     >
       {children}

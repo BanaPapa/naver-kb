@@ -8,6 +8,7 @@ import { monthlyLocal, type MonthlyRegionLookup } from '../../entities/monthly-d
 import { InfoTip } from '../../shared/ui/InfoTip';
 import { PeriodSlider } from '../region-selector/PeriodSlider';
 import { ControlButton, ControlField, ControlSection, ControlSelect } from '../../../components/control-panel';
+import { getAdminRoleTip, useAdminUi } from '../../../components/admin-ui';
 
 // 이동평균 기간 선택지(월)
 const MA_OPTIONS = [3, 6, 12, 24];
@@ -23,6 +24,7 @@ type LargeValue = string;
 // 월간 시세지표 사이드바 — 주간 RegionSelector와 동일한 UI·방식.
 // 차이는 데이터 소스(월간 룩업으로 가용성 판정)뿐이다.
 export const MonthlyRegionCascade: React.FC = () => {
+  const { isAdmin } = useAdminUi();
   const {
     selectedRegions,
     regionLabels,
@@ -197,7 +199,8 @@ export const MonthlyRegionCascade: React.FC = () => {
         isPrice ? (
           <button
             onClick={() => setBaseLineOn(!baseLineOn)}
-            title="각 그래프에 기준월 세로선 표시 On/Off"
+            title={isAdmin ? undefined : '각 그래프에 기준월 세로선 표시 On/Off'}
+            data-admin-role-tip={getAdminRoleTip(isAdmin, '버튼1')}
             className={`ctrl-item flex-none whitespace-nowrap rounded border px-1.5 py-0.5 text-[11px] font-semibold transition-colors ${
               baseLineOn ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-400'
             }`}
@@ -226,6 +229,7 @@ export const MonthlyRegionCascade: React.FC = () => {
           <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setTradeMaOn(!tradeMaOn)}
+                data-admin-role-tip={getAdminRoleTip(isAdmin, '버튼1')}
                 className={`ctrl-item flex-none whitespace-nowrap rounded-md border px-2 py-1 text-xs font-semibold transition-colors ${
                   tradeMaOn ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-400'
                 }`}
@@ -244,7 +248,8 @@ export const MonthlyRegionCascade: React.FC = () => {
               </select>
               <button
                 onClick={resetTradeYRanges}
-                title="모든 그래프 Y축을 기본(0~200)으로 초기화"
+                title={isAdmin ? undefined : '모든 그래프 Y축을 기본(0~200)으로 초기화'}
+                data-admin-role-tip={getAdminRoleTip(isAdmin, '버튼1')}
                 className="ctrl-secondary-action flex-none whitespace-nowrap px-2 py-1"
               >
                 Y축 초기화
