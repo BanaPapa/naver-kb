@@ -53,55 +53,57 @@ export function DisplaySettings({ settings, onUpdate }: DisplaySettingsProps) {
         앱 전체의 표시 방식을 설정합니다. 네비게이션/검색 조건 패널 설정은 매물시세와 KB 시계열 분석에 함께 적용됩니다.
       </p>
 
-      <div className="settings-card">
-        <h3 className="settings-card-title">글꼴</h3>
-        <div className="select-wrapper">
-          <select
-            className="form-select"
-            value={settings.fontFamily}
-            onChange={(e) => onUpdate({ fontFamily: e.target.value as AppSettings['fontFamily'] })}
-          >
-            {FONT_OPTIONS.map((f) => (
-              <option key={f.key} value={f.key}>{f.label}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="settings-card">
-        <h3 className="settings-card-title">화면 배율 (글씨 크기)</h3>
-        <p className="settings-note">전체 UI를 비율로 키우거나 줄입니다.</p>
-        <div className="scale-row">
-          <input
-            type="range"
-            className="settings-range"
-            min={0.85}
-            max={1.3}
-            step={0.05}
-            value={settings.uiScale}
-            onChange={(e) => onUpdate({ uiScale: Number(e.target.value) })}
-          />
-          <span className="scale-value">{Math.round(settings.uiScale * 100)}%</span>
-          <button type="button" className="btn-ghost btn-sm" onClick={() => onUpdate({ uiScale: 1 })}>
-            기본값
-          </button>
-        </div>
-      </div>
-
-      <div className="settings-card">
-        <h3 className="settings-card-title">검색 결과 밀도</h3>
-        <p className="settings-note">결과 표의 행 간격을 조절합니다.</p>
-        <div className="seg-toggle">
-          {DENSITY.map((d) => (
-            <button
-              key={d.key}
-              type="button"
-              className={`seg-btn${settings.resultDensity === d.key ? ' active' : ''}`}
-              onClick={() => onUpdate({ resultDensity: d.key })}
+      <div className="display-settings-overview">
+        <div className="settings-card">
+          <h3 className="settings-card-title">글꼴</h3>
+          <div className="select-wrapper">
+            <select
+              className="form-select"
+              value={settings.fontFamily}
+              onChange={(e) => onUpdate({ fontFamily: e.target.value as AppSettings['fontFamily'] })}
             >
-              {d.label}
+              {FONT_OPTIONS.map((f) => (
+                <option key={f.key} value={f.key}>{f.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="settings-card">
+          <h3 className="settings-card-title">화면 배율 (글씨 크기)</h3>
+          <p className="settings-note">전체 UI를 비율로 키우거나 줄입니다.</p>
+          <div className="scale-row">
+            <input
+              type="range"
+              className="settings-range"
+              min={0.85}
+              max={1.3}
+              step={0.05}
+              value={settings.uiScale}
+              onChange={(e) => onUpdate({ uiScale: Number(e.target.value) })}
+            />
+            <span className="scale-value">{Math.round(settings.uiScale * 100)}%</span>
+            <button type="button" className="btn-ghost btn-sm" onClick={() => onUpdate({ uiScale: 1 })}>
+              기본값
             </button>
-          ))}
+          </div>
+        </div>
+
+        <div className="settings-card">
+          <h3 className="settings-card-title">검색 결과 밀도</h3>
+          <p className="settings-note">결과 표의 행 간격을 조절합니다.</p>
+          <div className="seg-toggle">
+            {DENSITY.map((d) => (
+              <button
+                key={d.key}
+                type="button"
+                className={`seg-btn${settings.resultDensity === d.key ? ' active' : ''}`}
+                onClick={() => onUpdate({ resultDensity: d.key })}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
