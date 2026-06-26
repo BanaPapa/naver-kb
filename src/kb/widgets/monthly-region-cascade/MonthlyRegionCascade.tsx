@@ -201,7 +201,7 @@ export const MonthlyRegionCascade: React.FC = () => {
               <button
                 onClick={() => setBaseLineOn(!baseLineOn)}
                 title="각 그래프에 기준월 세로선 표시 On/Off"
-                className={`flex-none whitespace-nowrap rounded border px-1.5 py-0.5 text-[11px] font-semibold transition-colors ${
+                className={`ctrl-item flex-none whitespace-nowrap rounded border px-1.5 py-0.5 text-[11px] font-semibold transition-colors ${
                   baseLineOn ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-400'
                 }`}
               >
@@ -230,7 +230,7 @@ export const MonthlyRegionCascade: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setTradeMaOn(!tradeMaOn)}
-                className={`flex-none whitespace-nowrap rounded-md border px-2 py-1 text-xs font-semibold transition-colors ${
+                className={`ctrl-item flex-none whitespace-nowrap rounded-md border px-2 py-1 text-xs font-semibold transition-colors ${
                   tradeMaOn ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-400'
                 }`}
               >

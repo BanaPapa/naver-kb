@@ -281,3 +281,42 @@
   stroke-width: 2;
   fill: none;
 }
+
+/* Host display settings: KB left control panel follows the same role tokens as 매물시세. */
+:where(.kb-scope .eos-ctrl) h2,
+:where(.kb-scope .eos-ctrl) h3 {
+  font-family: var(--ctrl-title-font) !important;
+  font-size: var(--ctrl-title-size) !important;
+  font-weight: var(--ctrl-title-weight) !important;
+  color: var(--ctrl-title-color) !important;
+}
+:where(.kb-scope .eos-ctrl) select,
+:where(.kb-scope .eos-ctrl) option,
+:where(.kb-scope .eos-ctrl) .text-sm:not(h2):not(h3) {
+  font-family: var(--ctrl-item-font) !important;
+  font-size: var(--ctrl-item-size) !important;
+  font-weight: var(--ctrl-item-weight) !important;
+  color: var(--ctrl-item-color) !important;
+}
+:where(.kb-scope .eos-ctrl) label,
+:where(.kb-scope .eos-ctrl) p,
+:where(.kb-scope .eos-ctrl) .text-xs:not(h2):not(h3):not(.ctrl-item),
+:where(.kb-scope .eos-ctrl) .text-\[9px\]:not(h2):not(h3):not(.ctrl-item),
+:where(.kb-scope .eos-ctrl) .text-\[11px\]:not(h2):not(h3):not(.ctrl-item) {
+  font-family: var(--ctrl-desc-font) !important;
+  font-size: var(--ctrl-desc-size) !important;
+  font-weight: var(--ctrl-desc-weight) !important;
+  color: var(--ctrl-desc-color) !important;
+}
+:where(.kb-scope .eos-ctrl) button:not(.kb-accent-button):not(.ctrl-item):not(.ctrl-button-2) {
+  font-family: var(--ctrl-button1-font) !important;
+  font-size: var(--ctrl-button1-size) !important;
+  font-weight: var(--ctrl-button1-weight) !important;
+  color: var(--ctrl-button1-color) !important;
+}
+:where(.kb-scope .eos-ctrl) .kb-accent-button {
+  font-family: var(--ctrl-button2-font) !important;
+  font-size: var(--ctrl-button2-size) !important;
+  font-weight: var(--ctrl-button2-weight) !important;
+  color: var(--ctrl-button2-color) !important;
+}

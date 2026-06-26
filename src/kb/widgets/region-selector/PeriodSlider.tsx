@@ -74,14 +74,14 @@ export const PeriodSlider: React.FC<PeriodSliderProps> = props => {
           <button
             key={y}
             onClick={() => selectYears(y)}
-            className="flex-1 rounded-md border border-gray-200 py-1 text-[11px] text-gray-500 transition-colors hover:border-blue-300 hover:bg-gray-50 hover:text-blue-600"
+            className="ctrl-button-1 flex-1 rounded-md border border-gray-200 py-1 text-[11px] text-gray-500 transition-colors hover:border-blue-300 hover:bg-gray-50 hover:text-blue-600"
           >
             {y}년
           </button>
         ))}
         <button
           onClick={selectAll}
-          className="flex-1 rounded-md border border-gray-200 py-1 text-[11px] text-gray-500 transition-colors hover:border-blue-300 hover:bg-gray-50 hover:text-blue-600"
+          className="ctrl-button-1 flex-1 rounded-md border border-gray-200 py-1 text-[11px] text-gray-500 transition-colors hover:border-blue-300 hover:bg-gray-50 hover:text-blue-600"
         >
           전체
         </button>

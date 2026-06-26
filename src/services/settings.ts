@@ -4,6 +4,14 @@
 export type ThemeMode = 'dark' | 'light';
 export type FontFamilyKey = 'pretendard' | 'system' | 'serif' | 'mono';
 export type ResultDensity = 'compact' | 'comfortable';
+export type ControlTextRole = 'title' | 'item' | 'description' | 'button1' | 'button2';
+
+export interface ControlTextStyle {
+  fontSize: number;
+  fontFamily: FontFamilyKey;
+  fontWeight: number;
+  color: string;
+}
 
 export interface AppSettings {
   themeMode: ThemeMode;
@@ -12,6 +20,7 @@ export interface AppSettings {
   fontFamily: FontFamilyKey;
   uiScale: number;        // 0.85 ~ 1.3 (화면 배율)
   resultDensity: ResultDensity;
+  controlText: Record<ControlTextRole, ControlTextStyle>;
 }
 
 export const ACCENT_PRESETS: { label: string; color: string }[] = [
@@ -52,6 +61,38 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fontFamily: 'pretendard',
   uiScale: 1,
   resultDensity: 'comfortable',
+  controlText: {
+    title: {
+      fontSize: 14,
+      fontFamily: 'pretendard',
+      fontWeight: 700,
+      color: 'var(--fg)',
+    },
+    item: {
+      fontSize: 16,
+      fontFamily: 'pretendard',
+      fontWeight: 600,
+      color: 'var(--fg)',
+    },
+    description: {
+      fontSize: 12,
+      fontFamily: 'pretendard',
+      fontWeight: 500,
+      color: 'var(--muted)',
+    },
+    button1: {
+      fontSize: 13,
+      fontFamily: 'pretendard',
+      fontWeight: 600,
+      color: 'var(--fg-2)',
+    },
+    button2: {
+      fontSize: 16.5,
+      fontFamily: 'pretendard',
+      fontWeight: 700,
+      color: 'var(--blue-contrast, #ffffff)',
+    },
+  },
 };
 
 // v2: 기본 강조색을 라이트블루(#4f8dff)로 통일, 이전 저장값 자동 리셋
@@ -67,6 +108,18 @@ export function loadSettings(): AppSettings {
       ...DEFAULT_SETTINGS,
       ...parsed,
       accent: { ...DEFAULT_SETTINGS.accent, ...(parsed.accent ?? {}) },
+      controlText: {
+        ...DEFAULT_SETTINGS.controlText,
+        ...(parsed.controlText ?? {}),
+        title: { ...DEFAULT_SETTINGS.controlText.title, ...(parsed.controlText?.title ?? {}) },
+        item: { ...DEFAULT_SETTINGS.controlText.item, ...(parsed.controlText?.item ?? {}) },
+        description: {
+          ...DEFAULT_SETTINGS.controlText.description,
+          ...(parsed.controlText?.description ?? {}),
+        },
+        button1: { ...DEFAULT_SETTINGS.controlText.button1, ...(parsed.controlText?.button1 ?? {}) },
+        button2: { ...DEFAULT_SETTINGS.controlText.button2, ...(parsed.controlText?.button2 ?? {}) },
+      },
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -125,4 +178,19 @@ export function applySettings(settings: AppSettings): void {
   const font = FONT_OPTIONS.find((f) => f.key === settings.fontFamily) ?? FONT_OPTIONS[0];
   root.style.setProperty('--font', font.stack);
   root.style.setProperty('--ui-scale', String(settings.uiScale));
+
+  const setControlTextVars = (role: ControlTextRole, prefix: string) => {
+    const style = settings.controlText[role] ?? DEFAULT_SETTINGS.controlText[role];
+    const roleFont = FONT_OPTIONS.find((f) => f.key === style.fontFamily) ?? font;
+    root.style.setProperty(`--ctrl-${prefix}-size`, `${style.fontSize}px`);
+    root.style.setProperty(`--ctrl-${prefix}-font`, roleFont.stack);
+    root.style.setProperty(`--ctrl-${prefix}-weight`, String(style.fontWeight));
+    root.style.setProperty(`--ctrl-${prefix}-color`, style.color);
+  };
+
+  setControlTextVars('title', 'title');
+  setControlTextVars('item', 'item');
+  setControlTextVars('description', 'desc');
+  setControlTextVars('button1', 'button1');
+  setControlTextVars('button2', 'button2');
 }

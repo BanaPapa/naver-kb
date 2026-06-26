@@ -49,6 +49,26 @@
   --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
     system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+  --ctrl-title-size: 14px;
+  --ctrl-title-font: var(--font);
+  --ctrl-title-weight: 700;
+  --ctrl-title-color: var(--fg);
+  --ctrl-item-size: 16px;
+  --ctrl-item-font: var(--font);
+  --ctrl-item-weight: 600;
+  --ctrl-item-color: var(--fg);
+  --ctrl-desc-size: 12px;
+  --ctrl-desc-font: var(--font);
+  --ctrl-desc-weight: 500;
+  --ctrl-desc-color: var(--muted);
+  --ctrl-button1-size: 13px;
+  --ctrl-button1-font: var(--font);
+  --ctrl-button1-weight: 600;
+  --ctrl-button1-color: var(--fg-2);
+  --ctrl-button2-size: 16.5px;
+  --ctrl-button2-font: var(--font);
+  --ctrl-button2-weight: 700;
+  --ctrl-button2-color: var(--blue-contrast, #ffffff);
 
   font-family: var(--font);
 }
@@ -1378,15 +1398,15 @@ body {
   width: 100%;
   height: 46px;
   border-radius: 12px;
-  font-size: 16.5px;
-  font-weight: 700;
-  color: #fff;
+  font-size: var(--ctrl-button2-size);
+  font-weight: var(--ctrl-button2-weight);
+  color: var(--ctrl-button2-color);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
   border: 0;
-  font-family: inherit;
+  font-family: var(--ctrl-button2-font);
   cursor: pointer;
   background: var(--blue);
   box-shadow: 0 6px 18px -6px var(--blue-dim), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
@@ -1679,11 +1699,12 @@ body {
 }
 .form-label {
   display: block;
-  font-size: 14px;
-  font-weight: 700;
+  font-family: var(--ctrl-title-font);
+  font-size: var(--ctrl-title-size);
+  font-weight: var(--ctrl-title-weight);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ctrl-title-color);
   margin-bottom: 11px;
 }
 .select-wrapper {
@@ -1709,10 +1730,11 @@ body {
   border: 0;
   box-shadow: inset 0 0 0 1px var(--border);
   border-radius: 9px;
-  color: var(--fg);
+  color: var(--ctrl-item-color);
   padding: 0 32px 0 12px;
-  font-size: 16px;
-  font-family: inherit;
+  font-size: var(--ctrl-item-size);
+  font-family: var(--ctrl-item-font);
+  font-weight: var(--ctrl-item-weight);
   cursor: pointer;
   transition: box-shadow 0.15s;
   outline: none;
@@ -1785,21 +1807,23 @@ body {
   border-radius: 10px;
 }
 .keyword-label {
-  font-size: 13.5px;
+  font-family: var(--ctrl-desc-font);
+  font-size: var(--ctrl-desc-size);
   color: var(--blue);
-  font-weight: 700;
+  font-weight: var(--ctrl-desc-weight);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   white-space: nowrap;
 }
 .keyword-value {
-  font-size: 16px;
-  color: var(--fg);
-  font-weight: 600;
+  font-family: var(--ctrl-item-font);
+  font-size: var(--ctrl-item-size);
+  color: var(--ctrl-item-color);
+  font-weight: var(--ctrl-item-weight);
 }
 .keyword-code {
-  font-size: 14px;
-  color: var(--muted);
+  font-size: var(--ctrl-desc-size);
+  color: var(--ctrl-desc-color);
   font-family: var(--mono);
   margin-left: auto;
 }
@@ -1816,9 +1840,10 @@ body {
   border-radius: 99px;
   background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--border);
-  color: var(--muted);
-  font-size: 15px;
-  font-family: inherit;
+  color: var(--ctrl-button1-color);
+  font-size: var(--ctrl-button1-size);
+  font-family: var(--ctrl-button1-font);
+  font-weight: var(--ctrl-button1-weight);
   cursor: pointer;
   transition: 0.15s;
 }
@@ -1828,7 +1853,7 @@ body {
 }
 .space-btn.active {
   background: var(--blue-dim);
-  color: #fff;
+  color: var(--ctrl-button1-color);
   box-shadow: inset 0 0 0 1px rgba(79, 141, 255, 0.45);
   font-weight: 600;
 }
@@ -1857,10 +1882,10 @@ body {
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: inherit;
+  color: var(--ctrl-button1-color);
+  font-size: var(--ctrl-button1-size);
+  font-weight: var(--ctrl-button1-weight);
+  font-family: var(--ctrl-button1-font);
   cursor: pointer;
   transition: background 0.15s, color 0.15s, box-shadow 0.15s;
 }
@@ -1870,7 +1895,7 @@ body {
 }
 .space-unit-btn.active {
   background: var(--blue);
-  color: #fff;
+  color: var(--ctrl-button1-color);
   font-weight: 700;
   box-shadow: 0 2px 8px -2px var(--blue-dim);
 }
@@ -1886,7 +1911,8 @@ body {
   gap: 10px;
 }
 .space-slider-label {
-  font-size: 16px;
+  font-family: var(--ctrl-item-font);
+  font-size: var(--ctrl-item-size);
   color: var(--blue);
   text-align: center;
   font-weight: 700;
@@ -1899,9 +1925,10 @@ body {
   gap: 8px;
 }
 .space-slider-text {
-  font-size: 14px;
-  color: var(--fg-2);
-  font-weight: 600;
+  font-family: var(--ctrl-desc-font);
+  font-size: var(--ctrl-desc-size);
+  color: var(--ctrl-desc-color);
+  font-weight: var(--ctrl-desc-weight);
   white-space: nowrap;
   min-width: 30px;
 }
@@ -2008,6 +2035,53 @@ input[type='range'].space-range:disabled {
 }
 .btn-icon {
   font-size: 14px;
+}
+
+/* ============================================================
+   Control-panel typography tokens
+   Future modules can opt in with ctrl-title/item/desc/button-1/button-2.
+   ============================================================ */
+.ctrl-title,
+:where(.kb-scope .eos-ctrl) h2,
+:where(.kb-scope .eos-ctrl) h3 {
+  font-family: var(--ctrl-title-font) !important;
+  font-size: var(--ctrl-title-size) !important;
+  font-weight: var(--ctrl-title-weight) !important;
+  color: var(--ctrl-title-color) !important;
+}
+.ctrl-item,
+:where(.kb-scope .eos-ctrl) select,
+:where(.kb-scope .eos-ctrl) option,
+:where(.kb-scope .eos-ctrl) .text-sm:not(h2):not(h3) {
+  font-family: var(--ctrl-item-font) !important;
+  font-size: var(--ctrl-item-size) !important;
+  font-weight: var(--ctrl-item-weight) !important;
+  color: var(--ctrl-item-color) !important;
+}
+.ctrl-desc,
+:where(.kb-scope .eos-ctrl) label,
+:where(.kb-scope .eos-ctrl) p,
+:where(.kb-scope .eos-ctrl) .text-xs:not(h2):not(h3):not(.ctrl-item),
+:where(.kb-scope .eos-ctrl) .text-\[9px\]:not(h2):not(h3):not(.ctrl-item),
+:where(.kb-scope .eos-ctrl) .text-\[11px\]:not(h2):not(h3):not(.ctrl-item) {
+  font-family: var(--ctrl-desc-font) !important;
+  font-size: var(--ctrl-desc-size) !important;
+  font-weight: var(--ctrl-desc-weight) !important;
+  color: var(--ctrl-desc-color) !important;
+}
+.ctrl-button-1,
+:where(.kb-scope .eos-ctrl) button:not(.kb-accent-button):not(.ctrl-item):not(.ctrl-button-2) {
+  font-family: var(--ctrl-button1-font) !important;
+  font-size: var(--ctrl-button1-size) !important;
+  font-weight: var(--ctrl-button1-weight) !important;
+  color: var(--ctrl-button1-color) !important;
+}
+.ctrl-button-2,
+:where(.kb-scope .eos-ctrl) .kb-accent-button {
+  font-family: var(--ctrl-button2-font) !important;
+  font-size: var(--ctrl-button2-size) !important;
+  font-weight: var(--ctrl-button2-weight) !important;
+  color: var(--ctrl-button2-color) !important;
 }
 
 /* ============================================================
@@ -3479,6 +3553,12 @@ thead .col-resize-handle:active {
   gap: 18px;
   margin-bottom: 18px;
 }
+.settings-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
 .settings-card-title {
   font-size: 17.5px;
   font-weight: 800;
@@ -3546,6 +3626,88 @@ thead .col-resize-handle:active {
   color: var(--muted);
   line-height: 1.6;
   margin-top: 10px;
+}
+.control-text-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.control-text-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) minmax(160px, 1.4fr) minmax(140px, 1fr) minmax(100px, 0.7fr) minmax(120px, 0.8fr);
+  gap: 12px;
+  align-items: end;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.control-text-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-text-label {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--fg);
+}
+.control-text-hint {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.control-text-preview {
+  margin-top: 4px;
+  white-space: nowrap;
+}
+.control-text-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.control-text-field > span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.control-text-range,
+.control-text-color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.control-text-range b {
+  min-width: 48px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--fg-2);
+  font-variant-numeric: tabular-nums;
+}
+.control-text-color input[type='color'] {
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+.settings-page .form-select {
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg);
+}
+@media (max-width: 1180px) {
+  .control-text-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .control-text-meta {
+    grid-column: 1 / -1;
+  }
 }
 .cookie-textarea {
   width: 100%;
