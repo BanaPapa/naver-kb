@@ -2106,6 +2106,16 @@ input[type='range'].space-range:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
+.ctrl-primary-action.ctrl-button-2:disabled,
+.eos-run-btn.ctrl-button-2:disabled,
+.ctrl-button-2:disabled {
+  background: var(--border-2) !important;
+  color: var(--muted-2) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
 
 /* ============================================================
    Control-panel typography tokens
