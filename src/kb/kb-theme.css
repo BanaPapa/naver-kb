@@ -211,6 +211,11 @@
   color: var(--yellow);
   border: 1px solid rgba(245, 184, 92, 0.2);
 }
+.kb-portal .eos-tip-amber {
+  background: var(--blue-dim) !important;
+  color: var(--blue) !important;
+  border-color: color-mix(in srgb, var(--blue) 28%, transparent) !important;
+}
 
 /* Violet 배지 (미매핑) */
 .bg-violet-100 { background-color: var(--purple-dim) !important; }
